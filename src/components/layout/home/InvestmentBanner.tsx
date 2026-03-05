@@ -1,4 +1,4 @@
-import { Button } from "../ui/button"
+import { Button } from "../../ui/button"
 // import "./investment-banner.css"
 export default function InvestmentBanner() {
     return (

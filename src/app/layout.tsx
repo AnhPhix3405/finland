@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import {Be_Vietnam_Pro} from "next/font/google";
-
+import Header from "../components/layout/header";
 const beVietnamPro = Be_Vietnam_Pro({ weight: ["400", "700"] });
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={beVietnamPro.className}>
+        <Header />
         {children}
       </body>
     </html>
