@@ -11,7 +11,7 @@ export default function Header() {
     { href: "#", label: "Bản Đồ Quy Hoạch" },
     { href: "/du-an", label: "Dự Án" },
     { href: "/moi-gioi", label: "Môi Giới" },
-    { href: "#", label: "Đánh Giá 2026" },
+    { href: "/danh-gia-2026", label: "Đánh Giá 2026" },
   ];
 
   const getLinkClass = (href: string) => {
