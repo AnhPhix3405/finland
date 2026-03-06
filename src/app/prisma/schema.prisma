@@ -2,6 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
 }
+
 datasource db {
   provider = "postgresql"
 }
@@ -26,16 +27,18 @@ model attachments {
 }
 
 model brokers {
-  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  full_name      String   @db.VarChar(255)
-  phone          String   @db.VarChar(20)
-  email          String?  @db.VarChar(255)
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  full_name      String    @db.VarChar(255)
+  phone          String    @db.VarChar(20)
+  email          String?   @db.VarChar(255)
   avatar_url     String?
   working_area   String?
-  specialization String?  @db.VarChar(255)
+  specialization String?   @db.VarChar(255)
   bio            String?
-  is_active      Boolean? @default(true)
-  slug           String?  @unique @db.VarChar(255)
+  is_active      Boolean?  @default(true)
+  slug           String?   @unique @db.VarChar(255)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
 }
 
 model districts {
@@ -71,6 +74,8 @@ model projects {
   status        project_status? @default(s_p_m__b_n)
   area_min      Int?
   area_max      Int?
+  created_at    DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime?       @default(now()) @db.Timestamptz(6)
   attachments   attachments[]
   project_tags  project_tags[]
 }
