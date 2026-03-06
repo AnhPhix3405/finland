@@ -35,3 +35,5 @@ skills-lock.json
 /cli
 
 /src/generated/prisma
+.env
+/share
