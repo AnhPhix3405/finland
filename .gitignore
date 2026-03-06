@@ -27,3 +27,9 @@ npm-debug.log*
 # agent skills (IDE internal)
 .agents/
 skills-lock.json
+
+/db
+/.shared
+/.github
+/.agent
+/cli

@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Danh Sách Môi Giới - finland.vn",
@@ -11,7 +12,7 @@ export default function BrokerList() {
         <nav aria-label="Breadcrumb" className="flex text-sm text-slate-500 dark:text-slate-400 mb-2">
           <ol className="inline-flex items-center space-x-1 md:space-x-2">
             <li className="inline-flex items-center">
-              <a className="hover:text-primary transition-colors" href="/">Trang chủ</a>
+              <Link className="hover:text-primary transition-colors" href="/">Trang chủ</Link>
             </li>
             <li>
               <div className="flex items-center">

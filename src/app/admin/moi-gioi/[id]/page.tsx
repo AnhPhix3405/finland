@@ -19,30 +19,22 @@ export default function AdminBrokerDetail() {
                   <input accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" type="file" />
                 </div>
               </div>
-              <div className="w-full md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="col-span-1 md:col-span-2">
+              <div className="w-full md:w-2/3 space-y-4">
+                <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Họ và Tên <span className="text-red-500">*</span></label>
                   <input className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-1 focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" placeholder="Nhập họ và tên môi giới..." type="text" />
                 </div>
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Số điện thoại <span className="text-red-500">*</span></label>
-                  <input className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-1 focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" placeholder="Nhập số điện thoại..." type="tel" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Số điện thoại <span className="text-red-500">*</span></label>
+                    <input className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-1 focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" placeholder="Nhập số điện thoại..." type="tel" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                    <input className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-1 focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" placeholder="Nhập địa chỉ email..." type="email" />
+                  </div>
                 </div>
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
-                  <input className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-1 focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" placeholder="Nhập địa chỉ email..." type="email" />
-                </div>
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Khu vực hoạt động</label>
-                  <select className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-1 focus:ring-primary focus:border-primary dark:text-white">
-                    <option value="">Chọn khu vực...</option>
-                    <option value="q2">Quận 2, TP.HCM</option>
-                    <option value="q9">Quận 9, TP.HCM</option>
-                    <option value="tx">Thanh Xuân, Hà Nội</option>
-                    <option value="cg">Cầu Giấy, Hà Nội</option>
-                  </select>
-                </div>
-                <div className="col-span-1">
+                <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Chuyên môn</label>
                   <select className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-1 focus:ring-primary focus:border-primary dark:text-white">
                     <option value="">Chọn chuyên môn...</option>
@@ -51,6 +43,23 @@ export default function AdminBrokerDetail() {
                     <option value="bietthu">Biệt thự</option>
                     <option value="nhapho">Nhà phố</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Khu vực hoạt động</label>
+                  <div className="flex flex-row gap-2">
+                    <select className="min-w-10 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-1 focus:ring-primary focus:border-primary dark:text-white">
+                      <option value="">Chọn Tỉnh/Thành Phố...</option>
+                      <option value="q2">TP.HCM</option>
+                      <option value="tx">Hà Nội</option>
+                    </select>
+                    <select className="min-w-10 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-1 focus:ring-primary focus:border-primary dark:text-white">
+                      <option value="">Chọn Quận/Huyện...</option>
+                      <option value="q2">Quận 2</option>
+                      <option value="q9">Quận 9</option>
+                      <option value="tx">Thanh Xuân</option>
+                      <option value="cg">Cầu Giấy</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>

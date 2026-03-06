@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Báo Cáo Đánh Giá 2026 - finland.vn",
@@ -8,7 +9,7 @@ export default function Eval2026() {
   return (
     <div className="flex-grow w-full max-w-4xl mx-auto py-10 px-4">
       <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
-        <a className="hover:text-primary transition-colors" href="/">Trang chủ</a>
+        <Link className="hover:text-primary transition-colors" href="/">Trang chủ</Link>
         <span className="material-symbols-outlined text-[14px]">chevron_right</span>
         <span className="text-slate-800 dark:text-slate-200 font-medium">Đánh giá 2026</span>
       </div>
