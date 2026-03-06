@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+}
+
+model activity_logs {
+  id          String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  action      String  @db.VarChar(50)
+  target_type String  @db.VarChar(50)
+  target_id   String? @db.Uuid
+  detail      String?
+}
+
+model attachments {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  url           String
+  secure_url    String
+  size_bytes    BigInt?
+  original_name String?   @db.VarChar(255)
+  project_id    String    @db.Uuid
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  projects      projects  @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_project")
+}
+
+model brokers {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  full_name      String   @db.VarChar(255)
+  phone          String   @db.VarChar(20)
+  email          String?  @db.VarChar(255)
+  avatar_url     String?
+  working_area   String?
+  specialization String?  @db.VarChar(255)
+  bio            String?
+  is_active      Boolean? @default(true)
+  slug           String?  @unique @db.VarChar(255)
+}
+
+model districts {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String    @db.VarChar(100)
+  slug        String    @db.VarChar(100)
+  province_id String    @db.Uuid
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  provinces   provinces @relation(fields: [province_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_province")
+  wards       wards[]
+}
+
+model project_tags {
+  project_id String   @db.Uuid
+  tag_id     String   @db.Uuid
+  projects   projects @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tags       tags     @relation(fields: [tag_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([project_id, tag_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model projects {
+  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  project_code  String?         @unique @db.VarChar(50)
+  name          String
+  slug          String          @unique @db.VarChar(255)
+  address       String?
+  developer     String?         @db.VarChar(255)
+  contact_name  String?         @db.VarChar(255)
+  contact_phone String?         @db.VarChar(20)
+  content       String?
+  status        project_status? @default(s_p_m__b_n)
+  area_min      Int?
+  area_max      Int?
+  attachments   attachments[]
+  project_tags  project_tags[]
+}
+
+model provinces {
+  id         String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name       String      @db.VarChar(100)
+  slug       String      @unique @db.VarChar(100)
+  created_at DateTime?   @default(now()) @db.Timestamptz(6)
+  districts  districts[]
+}
+
+model tags {
+  id           String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name         String         @unique @db.VarChar(100)
+  slug         String         @unique @db.VarChar(120)
+  created_at   DateTime?      @default(now()) @db.Timestamptz(6)
+  project_tags project_tags[]
+}
+
+model wards {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String    @db.VarChar(100)
+  slug        String    @db.VarChar(100)
+  district_id String    @db.Uuid
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  districts   districts @relation(fields: [district_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_district")
+}
+
+enum post_status {
+  published
+  draft
+}
+
+enum project_status {
+  s_p_m__b_n   @map("sắp mở bán")
+  ang_m__b_n   @map("đang mở bán")
+  h_ng_th__c_p @map("hàng thứ cấp")
+}

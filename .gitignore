@@ -33,3 +33,5 @@ skills-lock.json
 /.github
 /.agent
 /cli
+
+/src/generated/prisma
