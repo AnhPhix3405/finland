@@ -23,3 +23,7 @@ npm-debug.log*
 
 # vercel
 .vercel
+
+# agent skills (IDE internal)
+.agents/
+skills-lock.json
