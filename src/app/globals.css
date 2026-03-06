@@ -6,6 +6,12 @@
   box-sizing: border-box;
 }
 @theme inline {
+  --color-primary: #10b981;
+  --color-background-light: #ffffff;
+  --color-background-dark: #0f172a;
+  --font-display: var(--font-inter), sans-serif;
+  --radius: 0.125rem;
+  --radius-md: 0.375rem;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -124,4 +130,11 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.blurry-map {
+  background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD2VWXXopbHLaF6Xr5-XVWDi776YzH-kMHctiyrdVDXOcsheB2Kp6A7VcawKaLvWGO_4V2ve8KbWciOgtPc0RUHyWc3_lt2sK5Vg5BLqvV-HcJ60HJlSlgn6pupAZA4N-SDim6vt0PgzOiZtLP53qQ2xmgyVT1DRExcTBxblUtwSUVp87V3ELQBqahp8JXM8ww8CISNCaz-LGB7j_N1IC2PA4qfu1ma2P12cVZJZgqIa-8D6WHb9XsEhXzUfZN9CkMsQg_BxGh0PMyg");
+  background-size: cover;
+  background-position: center;
+  filter: blur(4px);
 }
