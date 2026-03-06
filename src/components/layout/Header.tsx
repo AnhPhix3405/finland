@@ -1,70 +1,63 @@
-import { ChevronDownIcon, MenuSquare, DollarSignIcon, SearchIcon } from "lucide-react";
-import Image from "next/image";
-import "./header.css";
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 export default function Header() {
-    return (
-        <header className="w-full bg-white border-b border-gray-200 px-2 py-2">
-            {/* Top Row: Logo/Slogan + Navigation */}
-            <div className="flex items-center justify-between">
-                {/* Left: Logo + Slogan */}
-                <div className="flex flex-col">
-                    <div className="logo">
-                    </div>
-                    {/* <h1 className="text-lg font-bold text-[#003580]">GULAND</h1> */}
-                    <p className="text-xs text-[#003580] mt-1 font-bold text-center">SLOGAN TEXT</p>
-                </div>
+  const pathname = usePathname();
 
-                {/* Right: Navigation Icons */}
-                <div className="flex items-center gap-3">
-                    <Link href="/quy-hoach">
-                        <button className="flex flex-col items-center gap-1 py-1">
-                            <img src="imgs/search.png" alt=""
-                                className="block w-8 h-6"
-                            />
-                            <span className="text-[11px] text-[#343a40]">Quy hoạch</span>
-                        </button>
-                    </Link>
-                    <Link href="/check-gia">
-                        <button className="flex flex-col items-center gap-1 py-1">
-                            <DollarSignIcon className="w-8 h-6 text-black" />
-                            <span className="text-[11px] text-[#343a40]">Check giá</span>
-                        </button>
-                    </Link>
-                    <Link href="/danh-muc">
-                        <button className="flex flex-col items-center gap-1 py-1">
-                            <MenuSquare className="w-8 h-6 text-black" />
-                            <span className="text-[11px] text-[#343a40]">Danh mục</span>
-                        </button>
-                    </Link>
-                </div>
+  const navLinks = [
+    { href: "/", label: "Trang Chủ" },
+    { href: "#", label: "Bản Đồ Quy Hoạch" },
+    { href: "/du-an", label: "Dự Án" },
+    { href: "/moi-gioi", label: "Môi Giới" },
+    { href: "#", label: "Đánh Giá 2026" },
+  ];
+
+  const getLinkClass = (href: string) => {
+    // Exact match for home, startsWith for others to highlight subpages
+    const isActive = href === "/" ? pathname === "/" : pathname?.startsWith(href) && href !== "#";
+
+    return isActive
+      ? "text-primary font-medium border-b-2 border-primary py-4.5 h-14 flex items-center"
+      : "text-gray-700 dark:text-slate-300 hover:text-primary dark:hover:text-primary font-medium py-4.5 h-14 flex items-center transition-colors";
+  };
+
+  return (
+    <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-14">
+          <div className="flex-shrink-0 flex items-center">
+            <Link className="text-2xl font-bold text-emerald-700 tracking-tight" href="/">
+              finland.vn
+            </Link>
+          </div>
+          <nav className="hidden md:flex space-x-6 text-sm">
+            {navLinks.map((link, index) => (
+              <Link key={index} className={getLinkClass(link.href)} href={link.href}>
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="hidden md:flex items-center">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span className="material-symbols-outlined text-slate-400 text-sm">search</span>
+              </div>
+              <input
+                className="block w-64 pl-9 pr-3 h-8 border border-slate-300 dark:border-slate-700 rounded-sm leading-5 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm transition-colors"
+                placeholder="Tìm kiếm khu vực, dự án..."
+                type="text"
+              />
             </div>
-
-            {/* Bottom Row: Location Search + Search Button */}
-            <div className="flex items-center gap-2 bg-gray-50">
-                {/* Location Input with GPS */}
-                <div className="flex-1 flex items-center bg-white border border-gray-300 rounded-lg px-3 py-2">
-                    <Image
-                        src="/svgs/target-icon.svg"
-                        alt="GPS Icon"
-                        width={20}
-                        height={20}
-                        className="w-5 h-5 mr-2"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Vĩnh Long"
-                        className="flex-1 text-sm text-black placeholder-gray-500 border-none outline-none"
-                        defaultValue="Vĩnh Long"
-                    />
-                    <ChevronDownIcon className="w-4 h-4 text-gray-400 ml-2" />
-                </div>
-
-                {/* Search Button */}
-                <button className="bg-white p-2 rounded-lg border border-black">
-                    <SearchIcon className="w-5 h-5 text-black" />
-                </button>
-            </div>
-        </header>
-    );
+          </div>
+          <div className="flex items-center md:hidden">
+            <button className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 p-2" type="button">
+              <span className="material-symbols-outlined">menu</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
 }
