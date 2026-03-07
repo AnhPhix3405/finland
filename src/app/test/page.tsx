@@ -1,10 +1,16 @@
 'use client'
 import { useState } from "react"
 import { uploadProjectFile } from "../modules/upload.service"
-
+import RichTextEditor from "@/src/components/ui/RichTextEditor"
 export default function TestPage() {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
     const [isUploading, setIsUploading] = useState(false)
+    const [post, setPost] = useState("");
+
+    const onChange = (content: string) => {
+        setPost(content);
+        console.log(content);
+    };
 
     const handleSubmit = async () => {
         if (selectedFiles.length === 0) {
@@ -52,6 +58,7 @@ export default function TestPage() {
             >
                 {isUploading ? "Đang tải lên..." : "Submit"}
             </button>
+            <RichTextEditor />
         </div>
     )
 }

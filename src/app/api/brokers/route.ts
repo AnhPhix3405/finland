@@ -16,19 +16,19 @@ export async function GET(request: NextRequest) {
 
     // Tạo điều kiện where
     const where: brokersWhereInput = {};
-    
+
     if (is_active !== null && is_active !== undefined) {
       where.is_active = is_active === 'true';
     }
-    
+
     if (specialization) {
       where.specialization = { contains: specialization, mode: 'insensitive' };
     }
-    
+
     if (working_area) {
       where.working_area = { contains: working_area, mode: 'insensitive' };
     }
-    
+
     if (search) {
       where.OR = [
         { full_name: { contains: search, mode: 'insensitive' } },
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const {
       full_name,
       phone,
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       let errorMessage = 'Số điện thoại đã tồn tại';
       if (existingBroker.slug === slug) errorMessage = 'Slug đã tồn tại';
       if (existingBroker.email === email) errorMessage = 'Email đã tồn tại';
-      
+
       return NextResponse.json(
         { success: false, error: errorMessage },
         { status: 400 }
@@ -145,22 +145,22 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH - Cập nhật môi giới
+// PATCH - Cập nhật môi giới theo slug
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, ...updateData } = body;
+    const { slug, ...updateData } = body;
 
-    if (!id) {
+    if (!slug) {
       return NextResponse.json(
-        { success: false, error: 'ID môi giới là bắt buộc' },
+        { success: false, error: 'Slug môi giới là bắt buộc' },
         { status: 400 }
       );
     }
 
-    // Kiểm tra môi giới có tồn tại không
-    const existingBroker = await prisma.brokers.findUnique({
-      where: { id }
+    // Tìm broker theo slug để lấy id
+    const existingBroker = await prisma.brokers.findFirst({
+      where: { slug }
     });
 
     if (!existingBroker) {
@@ -170,8 +170,10 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Kiểm tra phone/slug/email trùng lặp (nếu có thay đổi)
-    if (updateData.phone || updateData.slug || updateData.email) {
+    const id = existingBroker.id;
+
+    // Kiểm tra phone/email trùng lặp (nếu có thay đổi)
+    if (updateData.phone || updateData.email) {
       const duplicateBroker = await prisma.brokers.findFirst({
         where: {
           AND: [
@@ -179,7 +181,6 @@ export async function PATCH(request: NextRequest) {
             {
               OR: [
                 ...(updateData.phone ? [{ phone: updateData.phone }] : []),
-                ...(updateData.slug ? [{ slug: updateData.slug }] : []),
                 ...(updateData.email ? [{ email: updateData.email }] : [])
               ]
             }
@@ -190,9 +191,8 @@ export async function PATCH(request: NextRequest) {
       if (duplicateBroker) {
         let errorMessage = 'Dữ liệu đã tồn tại';
         if (duplicateBroker.phone === updateData.phone) errorMessage = 'Số điện thoại đã tồn tại';
-        if (duplicateBroker.slug === updateData.slug) errorMessage = 'Slug đã tồn tại';
         if (duplicateBroker.email === updateData.email) errorMessage = 'Email đã tồn tại';
-        
+
         return NextResponse.json(
           { success: false, error: errorMessage },
           { status: 400 }

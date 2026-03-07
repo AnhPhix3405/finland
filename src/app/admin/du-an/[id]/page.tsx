@@ -3,6 +3,7 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { uploadProjectFile, deleteAttachment } from "@/src/app/modules/upload.service";
+import RichTextEditor from "@/src/components/ui/RichTextEditor";
 
 interface Attachment {
   id: string;
@@ -21,6 +22,7 @@ export default function AdminProjectDetail() {
 
   const [deletedImages, setDeletedImages] = useState<string[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [description, setDescription] = useState<string>('');
 
   // Mock initial images
   const [initialImages] = useState([
@@ -155,39 +157,18 @@ export default function AdminProjectDetail() {
               </div>
               <div className="col-span-1">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectDistrict">Quận / Huyện <span className="text-red-500">*</span></label>
-                <select className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700" disabled id="projectDistrict">
+                <select className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700" id="projectDistrict">
                   <option value="">Chọn Quận / Huyện</option>
+                  <option value="q2">Quận 2</option>
+                  <option value="q9">Quận 9</option>
+                  <option value="tx">Thanh Xuân</option>
+                  <option value="cg">Cầu Giấy</option>
                 </select>
               </div>
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mô tả dự án</label>
-                <div className="border border-slate-300 dark:border-slate-600 rounded-sm overflow-hidden bg-white dark:bg-slate-800">
-                  <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-600 px-3 py-2 flex items-center gap-1 flex-wrap">
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-sm transition-colors" title="Bold">
-                      <span className="material-symbols-outlined text-[18px]">format_bold</span>
-                    </button>
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-sm transition-colors" title="Italic">
-                      <span className="material-symbols-outlined text-[18px]">format_italic</span>
-                    </button>
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-sm transition-colors" title="Heading">
-                      <span className="material-symbols-outlined text-[18px]">title</span>
-                    </button>
-                    <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-sm transition-colors" title="Bulleted List">
-                      <span className="material-symbols-outlined text-[18px]">format_list_bulleted</span>
-                    </button>
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-sm transition-colors" title="Numbered List">
-                      <span className="material-symbols-outlined text-[18px]">format_list_numbered</span>
-                    </button>
-                    <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-sm transition-colors" title="Insert Image">
-                      <span className="material-symbols-outlined text-[18px]">image</span>
-                    </button>
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-sm transition-colors" title="Insert Link">
-                      <span className="material-symbols-outlined text-[18px]">link</span>
-                    </button>
-                  </div>
-                  <textarea className="w-full h-48 p-4 border-0 focus:ring-0 resize-y bg-transparent text-sm dark:text-white placeholder-slate-400" id="projectDescription" placeholder="Nhập mô tả chi tiết về dự án..."></textarea>
+                <div className="border border-slate-300 dark:border-slate-600 rounded-[3px] overflow-hidden bg-white dark:bg-slate-800">
+                  <RichTextEditor value={description} onChange={setDescription} />
                 </div>
               </div>
 

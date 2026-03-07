@@ -65,3 +65,46 @@ export async function deleteAttachment(id: string) {
   })
   return await res.json()
 }
+
+
+export async function uploadBrokerAvatar(file: File, brokerSlug: string) {
+  // lấy chữ ký
+  const signRes = await fetch("/api/upload/avatar/sign", {
+    method: "POST"
+  })
+
+  const { timestamp, signature, cloudName, apiKey } =
+    await signRes.json()
+
+  const formData = new FormData()
+
+  formData.append("file", file)
+  formData.append("api_key", apiKey)
+  formData.append("timestamp", timestamp)
+  formData.append("signature", signature)
+  formData.append("folder", "finland/brokers")
+
+  try {
+    const uploadRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+      {
+        method: "POST",
+        body: formData
+      }
+    )
+    const uploadData = await uploadRes.json()
+    console.log("uploadData", uploadData)
+    await fetch("/api/brokers", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        slug: brokerSlug,
+        avatar_url: uploadData.secure_url
+      })
+    })
+    return uploadData;
+  }
+  catch (err) {
+    console.log(err)
+  }
+}
