@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {prisma} from '@/src/lib/prisma'
+import { prisma } from '@/src/lib/prisma'
 import { projectsWhereInput } from '../../generated/prisma/models';
 type status = 's_p_m__b_n' | 'ang_m__b_n' | 'h_ng_th__c_p'
 // GET - Lấy danh sách tất cả dự án
@@ -15,11 +15,11 @@ export async function GET(request: NextRequest) {
 
     // Tạo điều kiện where
     const where: projectsWhereInput = {};
-    
+
     if (status) {
       where.status = status;
     }
-    
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       where,
       skip,
       take: limit,
-      orderBy: {  }
+      orderBy: {}
     });
 
     return NextResponse.json({
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const {
       project_code,
       name,

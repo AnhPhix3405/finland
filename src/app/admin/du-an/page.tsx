@@ -1,6 +1,25 @@
+'use client';
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export default function AdminProjectList() {
+  const [projects, setProjects] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch('/api/projects');
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setProjects(json.data);
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      }
+    };
+    fetchProjects();
+  }, []);
+
   return (
     <div className="p-6">
       <div className="w-full space-y-6">
@@ -40,19 +59,48 @@ export default function AdminProjectList() {
                 <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
                   <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-20">Hình ảnh</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tên dự án</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Khu vực</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Khu vực / Mã DA</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Hành động</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                <tr className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                {/* Dữ liệu lấy từ API */}
+                {projects.map((project: any) => (
+                  <tr key={project.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <td className="px-6 py-3">
+                      <div className="w-12 h-10 bg-slate-200 dark:bg-slate-700 rounded-sm bg-cover bg-center border border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-400">
+                        <span className="material-symbols-outlined text-xl">image</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3 text-sm text-slate-900 dark:text-slate-100 font-bold">
+                      {project.name}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-slate-600 dark:text-slate-300">
+                      {project.project_code || '---'}
+                    </td>
+                    <td className="px-6 py-3 text-right whitespace-nowrap">
+                      <button className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors p-1" title="Đang hiển thị">
+                        <span className="material-symbols-outlined text-xl">visibility</span>
+                      </button>
+                      <Link href={`/admin/du-an/${project.slug}`} className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 ml-1" title="Chỉnh sửa">
+                        <span className="material-symbols-outlined text-lg">edit</span>
+                      </Link>
+                      <button className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 ml-1" title="Xóa">
+                        <span className="material-symbols-outlined text-lg">delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+
+                {/* Dữ liệu mock tĩnh giữ lại theo yêu cầu */}
+                <tr className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors bg-slate-50/50 dark:bg-slate-800/50">
                   <td className="px-6 py-3">
                     <div className="w-12 h-10 bg-slate-200 dark:bg-slate-700 rounded-sm bg-cover bg-center border border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-400">
                       <span className="material-symbols-outlined text-xl">image</span>
                     </div>
                   </td>
                   <td className="px-6 py-3 text-sm text-slate-900 dark:text-slate-100 font-bold">
-                    Vinhomes Grand Park
+                    [Mock] Vinhomes Grand Park
                   </td>
                   <td className="px-6 py-3 text-sm text-slate-600 dark:text-slate-300">
                     Quận 9, TP.HCM
@@ -61,7 +109,7 @@ export default function AdminProjectList() {
                     <button className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors p-1" title="Đang hiển thị">
                       <span className="material-symbols-outlined text-xl">visibility</span>
                     </button>
-                    <Link href="/admin/du-an/demo" className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 ml-1" title="Chỉnh sửa">
+                    <Link href="/admin/du-an/vinhomes-grand-park" className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 ml-1" title="Chỉnh sửa">
                       <span className="material-symbols-outlined text-lg">edit</span>
                     </Link>
                     <button className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 ml-1" title="Xóa">
@@ -70,14 +118,14 @@ export default function AdminProjectList() {
                   </td>
                 </tr>
 
-                <tr className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                <tr className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors bg-slate-50/50 dark:bg-slate-800/50">
                   <td className="px-6 py-3">
                     <div className="w-12 h-10 bg-slate-200 dark:bg-slate-700 rounded-sm bg-cover bg-center border border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-400">
                       <span className="material-symbols-outlined text-xl">image</span>
                     </div>
                   </td>
                   <td className="px-6 py-3 text-sm text-slate-900 dark:text-slate-100 font-bold">
-                    Ecopark Hưng Yên
+                    [Mock] Ecopark Hưng Yên
                   </td>
                   <td className="px-6 py-3 text-sm text-slate-600 dark:text-slate-300">
                     Văn Giang, Hưng Yên
@@ -86,7 +134,7 @@ export default function AdminProjectList() {
                     <button className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors p-1" title="Đang hiển thị">
                       <span className="material-symbols-outlined text-xl">visibility</span>
                     </button>
-                    <Link href="/admin/du-an/demo" className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 ml-1" title="Chỉnh sửa">
+                    <Link href="/admin/du-an/ecopark-hung-yen" className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 ml-1" title="Chỉnh sửa">
                       <span className="material-symbols-outlined text-lg">edit</span>
                     </Link>
                     <button className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 ml-1" title="Xóa">
@@ -95,14 +143,14 @@ export default function AdminProjectList() {
                   </td>
                 </tr>
 
-                <tr className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                <tr className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors bg-slate-50/50 dark:bg-slate-800/50">
                   <td className="px-6 py-3">
                     <div className="w-12 h-10 bg-slate-200 dark:bg-slate-700 rounded-sm bg-cover bg-center border border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-400">
                       <span className="material-symbols-outlined text-xl">image</span>
                     </div>
                   </td>
                   <td className="px-6 py-3 text-sm text-slate-900 dark:text-slate-100 font-bold">
-                    Căn hộ Diamond Alnata
+                    [Mock] Căn hộ Diamond Alnata
                   </td>
                   <td className="px-6 py-3 text-sm text-slate-600 dark:text-slate-300">
                     Tân Phú, TP.HCM
@@ -111,7 +159,7 @@ export default function AdminProjectList() {
                     <button className="text-slate-400 hover:text-slate-500 dark:text-slate-500 dark:hover:text-slate-400 transition-colors p-1" title="Ẩn">
                       <span className="material-symbols-outlined text-xl">visibility_off</span>
                     </button>
-                    <Link href="/admin/du-an/demo" className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 ml-1" title="Chỉnh sửa">
+                    <Link href="/admin/du-an/diamond-alnata" className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 ml-1" title="Chỉnh sửa">
                       <span className="material-symbols-outlined text-lg">edit</span>
                     </Link>
                     <button className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 ml-1" title="Xóa">
