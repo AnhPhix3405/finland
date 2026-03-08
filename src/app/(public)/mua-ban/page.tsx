@@ -68,10 +68,10 @@ export default function MuaBanPage() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+          <h2 className="text-3xl font-black text-slate-900 dark:text-white leading-tight">
             Bất động sản Mua Bán toàn quốc
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-2">
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
             Tìm kiếm ngôi nhà mơ ước của bạn tại Finland.vn
           </p>
         </div>
