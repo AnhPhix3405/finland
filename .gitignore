@@ -37,3 +37,4 @@ skills-lock.json
 /src/generated/prisma
 .env
 /share
+*.tsbuildinfo
