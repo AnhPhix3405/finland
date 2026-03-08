@@ -9,6 +9,7 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import ListItem from '@tiptap/extension-list-item'
 import BulletList from '@tiptap/extension-bullet-list'
 import OrderedList from '@tiptap/extension-ordered-list'
+import Highlight from '@tiptap/extension-highlight'
 import { useState, useEffect } from 'react'
 import {
     Bold,
@@ -73,6 +74,9 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
                     class: 'list-decimal ml-6',
                 },
             }),
+            Highlight.configure({
+                multicolor: true,
+            })
         ],
         content: value,
         onUpdate: ({ editor }) => {
