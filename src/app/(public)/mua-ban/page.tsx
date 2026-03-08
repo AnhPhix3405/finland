@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { PropertyCard } from "../../../components/property/PropertyCard";
 import { PropertyFilter } from "../../../components/property/PropertyFilter";
 import { Pagination } from "../../../components/shared/Pagination";
@@ -62,15 +64,24 @@ export default function MuaBanPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Page Title */}
-      <div className="mb-6">
-        <h2 className="text-3xl font-black text-slate-900 dark:text-white leading-tight">
-          Bất động sản Mua Bán toàn quốc
-        </h2>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-          Tìm kiếm ngôi nhà mơ ước của bạn tại Finland.vn
-        </p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+            Bất động sản Mua Bán toàn quốc
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-2">
+            Tìm kiếm ngôi nhà mơ ước của bạn tại Finland.vn
+          </p>
+        </div>
+        <Link
+          href="/tao-bai-dang"
+          className="inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-900 text-emerald-600 border border-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 px-6 py-2.5 rounded-lg text-sm font-bold transition-all shrink-0 shadow-sm active:scale-95"
+        >
+          <Plus className="size-4" />
+          Tạo bài đăng
+        </Link>
       </div>
 
       <PropertyFilter />
