@@ -4,7 +4,42 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { uploadProjectFile, deleteAttachment } from "@/src/app/modules/upload.service";
 import RichTextEditor from "@/src/components/ui/RichTextEditor";
-
+const provinces = [
+  "Tuyên Quang",
+  "Lào Cai",
+  "Thái Nguyên",
+  "Phú Thọ",
+  "Bắc Ninh",
+  "Hưng Yên",
+  "Hải Phòng",
+  "Ninh Bình",
+  "Quảng Trị",
+  "Đà Nẵng",
+  "Quảng Ngãi",
+  "Gia Lai",
+  "Khánh Hoà",
+  "Lâm Đồng",
+  "Đắk Lắk",
+  "Hồ Chí Minh",
+  "Đồng Nai",
+  "Tây Ninh",
+  "Cần Thơ",
+  "Vĩnh Long",
+  "Đồng Tháp",
+  "Cà Mau",
+  "An Giang",
+  "Hà Nội",
+  "Huế",
+  "Lai Châu",
+  "Điện Biên",
+  "Sơn La",
+  "Lạng Sơn",
+  "Quảng Ninh",
+  "Thanh Hoá",
+  "Nghệ An",
+  "Hà Tĩnh",
+  "Cao Bằng"
+];
 interface Attachment {
   id: string;
   url: string;
@@ -23,6 +58,38 @@ export default function AdminProjectDetail() {
   const [deletedImages, setDeletedImages] = useState<string[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [description, setDescription] = useState<string>('');
+
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('');
+  const [districtsList, setDistrictsList] = useState<{ name: string }[]>([]);
+
+  useEffect(() => {
+    if (!selectedProvince) {
+      setDistrictsList([]);
+      return;
+    }
+    const fetchDistricts = async () => {
+      try {
+        const url = `https://vietnamlabs.com/api/vietnamprovince?province=${encodeURIComponent(selectedProvince)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data?.success && data?.data?.wards) {
+          setDistrictsList(data.data.wards);
+        } else {
+          setDistrictsList([]);
+        }
+      } catch (err) {
+        console.error('Error fetching districts/wards:', err);
+      }
+    };
+    fetchDistricts();
+  }, [selectedProvince]);
+
+  // Reset selected district when province changes
+  useEffect(() => {
+    setSelectedDistrict('');
+  }, [selectedProvince]);
+
 
   // Mock initial images
   const [initialImages] = useState([
@@ -148,21 +215,31 @@ export default function AdminProjectDetail() {
               </div>
               <div className="col-span-1">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectCity">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
-                <select className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700" id="projectCity">
+                <select
+                  value={selectedProvince}
+                  onChange={(e) => setSelectedProvince(e.target.value)}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700"
+                  id="projectCity"
+                >
                   <option value="">Chọn Tỉnh / Thành phố</option>
-                  <option value="hcm">TP. Hồ Chí Minh</option>
-                  <option value="hn">Hà Nội</option>
-                  <option value="dn">Đà Nẵng</option>
+                  {provinces.map((prov) => (
+                    <option key={prov} value={prov}>{prov}</option>
+                  ))}
                 </select>
               </div>
               <div className="col-span-1">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectDistrict">Quận / Huyện <span className="text-red-500">*</span></label>
-                <select className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700" id="projectDistrict">
-                  <option value="">Chọn Quận / Huyện</option>
-                  <option value="q2">Quận 2</option>
-                  <option value="q9">Quận 9</option>
-                  <option value="tx">Thanh Xuân</option>
-                  <option value="cg">Cầu Giấy</option>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectDistrict">Phường / Xã <span className="text-red-500">*</span></label>
+                <select
+                  value={selectedDistrict}
+                  onChange={(e) => setSelectedDistrict(e.target.value)}
+                  disabled={!selectedProvince || districtsList.length === 0}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                  id="projectDistrict"
+                >
+                  <option value="">Chọn Phường/Xã</option>
+                  {districtsList.map((district, idx) => (
+                    <option key={idx} value={district.name}>{district.name}</option>
+                  ))}
                 </select>
               </div>
               <div className="col-span-1 md:col-span-2">

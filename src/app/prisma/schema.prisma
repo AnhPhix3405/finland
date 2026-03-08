@@ -42,16 +42,6 @@ model brokers {
   updated_at     DateTime? @default(now()) @db.Timestamptz(6)
 }
 
-model districts {
-  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name        String    @db.VarChar(100)
-  slug        String    @db.VarChar(100)
-  province_id String    @db.Uuid
-  created_at  DateTime? @default(now()) @db.Timestamptz(6)
-  provinces   provinces @relation(fields: [province_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_province")
-  wards       wards[]
-}
-
 model project_tags {
   project_id String   @db.Uuid
   tag_id     String   @db.Uuid
@@ -67,7 +57,6 @@ model projects {
   project_code  String?         @unique @db.VarChar(50)
   name          String
   slug          String          @unique @db.VarChar(255)
-  address       String?
   developer     String?         @db.VarChar(255)
   contact_name  String?         @db.VarChar(255)
   contact_phone String?         @db.VarChar(20)
@@ -77,15 +66,9 @@ model projects {
   area_max      Int?
   created_at    DateTime?       @default(now()) @db.Timestamptz(6)
   updated_at    DateTime?       @default(now()) @db.Timestamptz(6)
+  province      String?         @db.VarChar(100)
+  ward          String?         @db.VarChar(100)
   project_tags  project_tags[]
-}
-
-model provinces {
-  id         String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name       String      @db.VarChar(100)
-  slug       String      @unique @db.VarChar(100)
-  created_at DateTime?   @default(now()) @db.Timestamptz(6)
-  districts  districts[]
 }
 
 model tags {
@@ -94,15 +77,6 @@ model tags {
   slug         String         @unique @db.VarChar(120)
   created_at   DateTime?      @default(now()) @db.Timestamptz(6)
   project_tags project_tags[]
-}
-
-model wards {
-  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name        String    @db.VarChar(100)
-  slug        String    @db.VarChar(100)
-  district_id String    @db.Uuid
-  created_at  DateTime? @default(now()) @db.Timestamptz(6)
-  districts   districts @relation(fields: [district_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_district")
 }
 
 enum post_status {
