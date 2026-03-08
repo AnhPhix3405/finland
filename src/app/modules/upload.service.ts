@@ -2,7 +2,7 @@
 export async function uploadProjectFile(file: File, projectId: string) {
 
   // lấy chữ ký
-  const signRes = await fetch("/api/upload/sign", {
+  const signRes = await fetch("/api/upload/projects/sign", {
     method: "POST"
   })
 
@@ -31,16 +31,12 @@ export async function uploadProjectFile(file: File, projectId: string) {
     secure_url: uploadData.secure_url,
     size_bytes: uploadData.bytes.toString(),
     original_name: uploadData.original_filename,
-    project_id: projectId,
-    public_id: uploadData.public_id
+    public_id: uploadData.public_id,
+    target_id: projectId,
+    target_type: "project"
   }
   console.log("attachmentData", attachmentData)
-  createAttachment(attachmentData).then((res) => {
-    console.log(res)
-  }).catch((err) => {
-    console.log(err)
-  })
-  // fire and forget
+  await createAttachment(attachmentData)
   return uploadData;
 }
 type AttachmentData = {
@@ -48,10 +44,11 @@ type AttachmentData = {
   secure_url: string;
   size_bytes: string;
   original_name: string;
-  project_id: string;
   public_id: string;
+  target_id?: string;
+  target_type: string;
 }
-async function createAttachment(data: AttachmentData): Promise<any> {
+async function createAttachment(data: AttachmentData) {
   const res = await fetch("/api/attachments", {
     method: "POST",
     body: JSON.stringify(data)
@@ -102,6 +99,50 @@ export async function uploadBrokerAvatar(file: File, brokerSlug: string) {
         avatar_url: uploadData.secure_url
       })
     })
+    return uploadData;
+  }
+  catch (err) {
+    console.log(err)
+  }
+}
+
+export async function uploadAttachments(file: File) {
+  // lấy chữ ký
+  const signRes = await fetch("/api/upload/sign", {
+    method: "POST"
+  })
+
+  const { timestamp, signature, cloudName, apiKey } =
+    await signRes.json()
+
+  const formData = new FormData()
+
+  formData.append("file", file)
+  formData.append("api_key", apiKey)
+  formData.append("timestamp", timestamp)
+  formData.append("signature", signature)
+  formData.append("folder", "finland/attachments")
+
+  try {
+    const uploadRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+      {
+        method: "POST",
+        body: formData
+      }
+    )
+    const uploadData = await uploadRes.json()
+    console.log("uploadData", uploadData)
+    const attachmentData: AttachmentData = {
+      url: uploadData.url,
+      secure_url: uploadData.secure_url,
+      size_bytes: uploadData.bytes.toString(),
+      original_name: uploadData.original_filename,
+      public_id: uploadData.public_id,
+      target_type: "admin"
+    }
+    console.log("attachmentData", attachmentData)
+    await createAttachment(attachmentData)
     return uploadData;
   }
   catch (err) {
