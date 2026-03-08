@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '10');
         const search = searchParams.get('search');
-        const project_id = searchParams.get('project_id');
+        const target_id = searchParams.get('target_id');
+        const target_type = searchParams.get('target_type');
         const slug = searchParams.get('slug');
 
         const skip = (page - 1) * limit;
@@ -16,12 +17,26 @@ export async function GET(request: NextRequest) {
         // Tạo điều kiện where
         const where: any = {};
 
-        if (project_id) {
-            where.project_id = project_id;
+        if (target_id) {
+            where.target_id = target_id;
+        }
+
+        if (target_type) {
+            where.target_type = target_type;
         }
 
         if (slug) {
-            where.projects = { slug: slug };
+            const project = await prisma.projects.findUnique({
+                where: { slug }
+            });
+            if (project) {
+                where.target_id = project.id;
+                // Giả định target_type cho resource project là 'project'
+                where.target_type = 'project';
+            } else {
+                // Nếu không tìm thấy project bằng slug, set một uuid không tồn tại để trả về danh sách trống
+                where.target_id = '00000000-0000-0000-0000-000000000000';
+            }
         }
 
         if (search) {
@@ -77,13 +92,20 @@ export async function POST(request: NextRequest) {
             size_bytes,
             original_name,
             public_id,
-            project_id
+            target_id,
+            target_type
         } = body;
 
         // Validation
-        if (!url || !secure_url || !project_id) {
+        if (!url || !secure_url || !target_type) {
             return NextResponse.json(
-                { success: false, error: 'url, secure_url và project_id là bắt buộc' },
+                { success: false, error: 'url, secure_url và target_type là bắt buộc' },
+                { status: 400 }
+            );
+        }
+        if (target_type !== 'admin' && !target_id) {
+            return NextResponse.json(
+                { success: false, error: 'target_id là bắt buộc' },
                 { status: 400 }
             );
         }
@@ -96,7 +118,8 @@ export async function POST(request: NextRequest) {
                 size_bytes: size_bytes ? BigInt(size_bytes) : null,
                 original_name,
                 public_id,
-                project_id
+                target_id,
+                target_type
             }
         });
 
