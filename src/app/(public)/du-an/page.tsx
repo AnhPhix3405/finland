@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { PropertyFilter } from "../../../components/property/PropertyFilter";
+import { Pagination } from "../../../components/shared/Pagination";
 
 export const metadata: Metadata = {
   title: "Danh Sách Dự Án - finland.vn",
@@ -23,39 +25,7 @@ export default function ProjectList() {
       </nav>
       <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-6 uppercase tracking-tight">DANH SÁCH DỰ ÁN BẤT ĐỘNG SẢN</h1>
       
-      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-4 mb-8">
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full md:w-auto flex-grow">
-            <select className="block w-full border-gray-300 dark:border-slate-600 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-sm bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 h-10 rounded-none">
-              <option value="">Tỉnh/Thành phố</option>
-              <option value="hn">Hà Nội</option>
-              <option value="hcm">TP. Hồ Chí Minh</option>
-              <option value="dn">Đà Nẵng</option>
-            </select>
-            <select className="block w-full border-gray-300 dark:border-slate-600 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-sm bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 h-10 rounded-none">
-              <option value="">Loại hình dự án</option>
-              <option value="apartment">Căn hộ chung cư</option>
-              <option value="villa">Biệt thự, Liền kề</option>
-              <option value="land">Đất nền dự án</option>
-            </select>
-            <select className="block w-full border-gray-300 dark:border-slate-600 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-sm bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 h-10 rounded-none">
-              <option value="">Mức giá</option>
-              <option value="1">Dưới 1 tỷ</option>
-              <option value="2">1 - 3 tỷ</option>
-              <option value="3">3 - 5 tỷ</option>
-              <option value="4">Trên 5 tỷ</option>
-            </select>
-          </div>
-          <div className="w-full md:w-48 shrink-0">
-            <select className="block w-full border-gray-300 dark:border-slate-600 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-sm bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 h-10 rounded-none">
-              <option value="">Sắp xếp</option>
-              <option value="newest">Mới nhất</option>
-              <option value="price_asc">Giá từ thấp đến cao</option>
-              <option value="price_desc">Giá từ cao đến thấp</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      <PropertyFilter hidePrice={true} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex flex-col hover:border-primary transition-colors shadow-sm">
@@ -210,24 +180,7 @@ export default function ProjectList() {
 
       </div>
 
-      <div className="mt-10 flex justify-center">
-        <nav aria-label="Pagination" className="isolate inline-flex -space-x-px shadow-sm">
-          <a className="relative inline-flex items-center px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 bg-white dark:bg-slate-800 dark:ring-slate-700 dark:hover:bg-slate-700 transition-colors" href="#">
-            <span className="sr-only">Trang trước</span>
-            <span className="material-symbols-outlined text-sm">chevron_left</span>
-          </a>
-          <a aria-current="page" className="relative z-10 inline-flex items-center bg-emerald-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600" href="#">1</a>
-          <a className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 bg-white dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700 transition-colors" href="#">2</a>
-          <a className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex bg-white dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700 transition-colors" href="#">3</a>
-          <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 bg-white dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">...</span>
-          <a className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex bg-white dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700 transition-colors" href="#">8</a>
-          <a className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 bg-white dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700 transition-colors" href="#">9</a>
-          <a className="relative inline-flex items-center px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 bg-white dark:bg-slate-800 dark:ring-slate-700 dark:hover:bg-slate-700 transition-colors" href="#">
-            <span className="sr-only">Trang sau</span>
-            <span className="material-symbols-outlined text-sm">chevron_right</span>
-          </a>
-        </nav>
-      </div>
+      <Pagination />
     </div>
   );
 }
