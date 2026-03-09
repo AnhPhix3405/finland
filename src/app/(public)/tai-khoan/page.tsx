@@ -2,8 +2,41 @@
 
 import Link from "next/link";
 import { User, List, Heart, Lock, LogOut, Camera, Edit2, Bell } from "lucide-react";
+import { useAuthStore } from "@/src/store/authStore";
+import { useUserStore } from "@/src/store/userStore";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function AccountPage() {
+  const router = useRouter();
+  const { isAuthenticated, clearAuth } = useAuthStore();
+  const { user, clearUser } = useUserStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isAuthenticated) {
+      router.push("/dang-nhap");
+    }
+  }, [mounted, isAuthenticated, router]);
+
+  const handleLogout = () => {
+    clearAuth();
+    clearUser();
+    router.push("/dang-nhap");
+    router.refresh();
+  };
+
+  if (!mounted || !isAuthenticated || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-slate-500">Đang tải...</div>
+      </div>
+    );
+  }
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col lg:flex-row gap-8">
@@ -13,13 +46,21 @@ export default function AccountPage() {
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
               <div className="relative group cursor-pointer mb-4">
                 <div className="size-24 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center overflow-hidden border-4 border-emerald-100 dark:border-emerald-900/50">
-                  <User className="size-12" />
+                  {user?.avatar_url ? (
+                    <img 
+                      src={user.avatar_url} 
+                      alt={user.full_name} 
+                      className="size-full rounded-full object-cover" 
+                    />
+                  ) : (
+                    <User className="size-12" />
+                  )}
                 </div>
                 <div className="absolute bottom-0 right-0 bg-emerald-600 text-white p-1.5 rounded-full border-2 border-white dark:border-slate-900 shadow-md">
                   <Edit2 className="size-3" />
                 </div>
               </div>
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white">Long</h3>
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white">{user.full_name}</h3>
               <p className="text-sm text-emerald-600 font-medium">Thành viên</p>
             </div>
             <nav className="p-2 space-y-1">
@@ -40,7 +81,11 @@ export default function AccountPage() {
                 Đổi mật khẩu
               </Link>
               <div className="h-px bg-slate-100 dark:bg-slate-800 my-2 mx-4 border-0"></div>
-              <button type="button" className="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+              <button 
+                type="button" 
+                onClick={handleLogout}
+                className="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              >
                 <LogOut className="size-4" />
                 Đăng xuất
               </button>
@@ -60,7 +105,15 @@ export default function AccountPage() {
               <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 lg:mb-10">
                 <div className="relative shrink-0">
                   <div className="size-24 md:size-32 rounded-lg bg-emerald-50 dark:bg-emerald-900/10 text-emerald-500 flex items-center justify-center overflow-hidden border border-emerald-100 dark:border-slate-700">
-                    <User className="size-10 md:size-16 opacity-50" />
+                    {user?.avatar_url ? (
+                      <img 
+                        src={user.avatar_url} 
+                        alt={user.full_name} 
+                        className="size-full rounded-lg object-cover" 
+                      />
+                    ) : (
+                      <User className="size-10 md:size-16 opacity-50" />
+                    )}
                   </div>
                   <button type="button" className="absolute -bottom-3 -right-3 bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 rounded-full p-2 hover:text-emerald-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" aria-label="Đổi ảnh đại diện">
                     <Camera className="size-4 md:size-5" />
@@ -90,7 +143,7 @@ export default function AccountPage() {
                     <input 
                       id="fullName"
                       type="text" 
-                      defaultValue="Long" 
+                      defaultValue={user.full_name} 
                       className="w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-800 text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500 transition-all text-sm h-10 px-3 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                     />
                   </div>
@@ -104,7 +157,7 @@ export default function AccountPage() {
                       <input 
                         id="phoneNumber"
                         type="tel" 
-                        defaultValue="0987 654 321" 
+                        defaultValue={user.phone} 
                         readOnly 
                         className="w-full rounded-md bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 text-sm cursor-not-allowed pr-20 h-10 px-3 shadow-sm focus:outline-none"
                       />
@@ -122,7 +175,8 @@ export default function AccountPage() {
                     <input 
                       id="emailAddress"
                       type="email" 
-                      defaultValue="long@example.com"
+                      defaultValue={user.email || ""}
+                      placeholder="Nhập email của bạn"
                       className="w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-800 text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500 transition-all text-sm h-10 px-3 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                     />
                   </div>
@@ -134,13 +188,14 @@ export default function AccountPage() {
                     </label>
                     <select 
                       id="interestedArea"
-                      defaultValue="hn"
+                      defaultValue={user.province || ""}
                       className="w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-800 text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500 transition-all text-sm h-10 px-3 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                     >
-                      <option value="hn">Hà Nội</option>
-                      <option value="hcm">TP. Hồ Chí Minh</option>
-                      <option value="dn">Đà Nẵng</option>
-                      <option value="other">Khác</option>
+                      <option value="">Chọn khu vực</option>
+                      <option value="Hà Nội">Hà Nội</option>
+                      <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                      <option value="Đà Nẵng">Đà Nẵng</option>
+                      <option value="Khác">Khác</option>
                     </select>
                   </div>
 

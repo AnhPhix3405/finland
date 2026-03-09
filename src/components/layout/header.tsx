@@ -1,17 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/src/store/authStore";
+import { useUserStore } from "@/src/store/userStore";
+import { LogOut, User } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { isAuthenticated, clearAuth } = useAuthStore();
+  const { user, clearUser } = useUserStore();
+
+  const handleLogout = () => {
+    clearAuth();
+    clearUser();
+    router.push("/dang-nhap");
+    router.refresh();
+  };
 
   const navLinks = [
     { href: "/", label: "Trang Chủ" },
     { href: "#", label: "Bản Đồ Quy Hoạch" },
     { href: "/du-an", label: "Dự Án" },
+    { href: "/mua-ban", label: "Mua Bán" },
+    { href: "/cho-thue", label: "Cho Thuê" },
     { href: "/moi-gioi", label: "Môi Giới" },
-    { href: "/danh-gia-2026", label: "Đánh Giá 2026" },
   ];
 
   const getLinkClass = (href: string) => {
@@ -39,18 +54,48 @@ export default function Header() {
               </Link>
             ))}
           </nav>
-          <div className="hidden md:flex items-center">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="material-symbols-outlined text-slate-400 text-sm">search</span>
+
+          <div className="hidden md:flex items-center space-x-4">
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <Link href="/tai-khoan" className="flex items-center space-x-2 hover:opacity-75 transition-opacity">
+                  <div className="size-8 rounded-full bg-emerald-100 dark:bg-slate-800 flex items-center justify-center border border-emerald-200 dark:border-slate-700">
+                    {user?.avatar_url ? (
+                      <img src={user.avatar_url} alt={user.full_name} className="size-full rounded-full object-cover" />
+                    ) : (
+                      <User className="size-4 text-emerald-600 dark:text-emerald-400" />
+                    )}
+                  </div>
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    {user?.full_name}
+                  </span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
+                  title="Đăng xuất"
+                >
+                  <LogOut className="size-5" />
+                </button>
               </div>
-              <input
-                className="block w-64 pl-9 pr-3 h-8 border border-slate-300 dark:border-slate-700 rounded-sm leading-5 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm transition-colors"
-                placeholder="Tìm kiếm khu vực, dự án..."
-                type="text"
-              />
-            </div>
+            ) : (
+              <>
+                <Link
+                  href="/dang-nhap"
+                  className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm hover:text-primary dark:hover:text-primary hover:border-primary dark:hover:border-primary transition-colors"
+                >
+                  Đăng nhập
+                </Link>
+                <Link
+                  href="/dang-ky"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm transition-colors"
+                >
+                  Đăng ký
+                </Link>
+              </>
+            )}
           </div>
+
           <div className="flex items-center md:hidden">
             <button className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 p-2" type="button">
               <span className="material-symbols-outlined">menu</span>

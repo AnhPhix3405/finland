@@ -5,11 +5,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginBroker } from "@/src/app/modules/auth/auth.service";
-import { useAuthStore } from "@/src/store/authStore";
 
 export function LoginForm() {
   const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
 
   const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState("");
@@ -26,7 +24,7 @@ export function LoginForm() {
       const result = await loginBroker(phone, password);
 
       if (result.success) {
-        setAuth(result.data, result.data.access_token);
+        // Auth service already updated stores
         router.push("/");
         router.refresh();
       } else {
@@ -34,6 +32,7 @@ export function LoginForm() {
       }
     } catch (err) {
       setError("Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.");
+      console.error('Login form error:', err);
     } finally {
       setIsLoading(false);
     }

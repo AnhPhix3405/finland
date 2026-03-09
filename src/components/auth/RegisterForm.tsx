@@ -5,11 +5,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { registerBroker } from "@/src/app/modules/auth/auth.service";
-import { useAuthStore } from "@/src/store/authStore";
 
 export function RegisterForm() {
   const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -48,20 +46,15 @@ export function RegisterForm() {
       const result = await registerBroker(registerData);
 
       if (result.success) {
-        // Since register API might not return space token currently, 
-        // we might need to login after register or update register API.
-        // For now, let's assume we redirect to login or check if register returns token.
-        if (result.data?.access_token) {
-          setAuth(result.data, result.data.access_token);
-          router.push("/");
-        } else {
-          router.push("/dang-nhap?registered=true");
-        }
+        // Auth service already updated stores with token from register API
+        router.push("/");
+        router.refresh();
       } else {
         setError(result.error || "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.");
       }
     } catch (err) {
       setError("Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại.");
+      console.error('Registration form error:', err);
     } finally {
       setIsLoading(false);
     }

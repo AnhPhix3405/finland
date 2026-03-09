@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { hashPassword } from '@/src/app/modules/auth/passwordHasher';
+import { signAccessToken, signRefreshToken } from '@/src/app/modules/auth/jwt';
 
 export async function POST(request: NextRequest) {
     try {
@@ -62,11 +63,29 @@ export async function POST(request: NextRequest) {
 
         const { password_hash: _, ...safeBroker } = newBroker;
 
-        return NextResponse.json({
+        // Auto-login after successful registration
+        const accessToken = await signAccessToken(safeBroker);
+        const refreshToken = await signRefreshToken(safeBroker);
+
+        const response = NextResponse.json({
             success: true,
-            data: safeBroker,
+            data: {
+                ...safeBroker,
+                access_token: accessToken
+            },
             message: 'Đăng ký tài khoản môi giới thành công'
         }, { status: 201 });
+
+        response.cookies.set({
+            name: 'refresh-token',
+            value: refreshToken,
+            httpOnly: true,
+            maxAge: 30 * 24 * 60 * 60, // 30 days
+            sameSite: 'strict',
+            path: '/',
+        });
+
+        return response;
 
     } catch (error: any) {
         console.error('Registration error:', error);
