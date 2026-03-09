@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma'
 import { projectsWhereInput } from '../../generated/prisma/models';
-type status = 's_p_m__b_n' | 'ang_m__b_n' | 'h_ng_th__c_p'
 // GET - Lấy danh sách tất cả dự án
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const status: status | null = searchParams.get('status') as status | null;
+    const status = searchParams.get('status');
     const search = searchParams.get('search');
+    const slug = searchParams.get('slug');
 
     const skip = (page - 1) * limit;
 
@@ -18,6 +18,10 @@ export async function GET(request: NextRequest) {
 
     if (status) {
       where.status = status;
+    }
+
+    if (slug) {
+      where.slug = slug;
     }
 
     if (search) {
@@ -74,7 +78,11 @@ export async function POST(request: NextRequest) {
       content,
       status = 'sắp mở bán',
       area_min,
-      area_max
+      area_max,
+      price,
+      project_type,
+      province,
+      ward
     } = body;
 
     // Validation
@@ -114,7 +122,11 @@ export async function POST(request: NextRequest) {
         content,
         status,
         area_min: area_min ? parseInt(area_min) : null,
-        area_max: area_max ? parseInt(area_max) : null
+        area_max: area_max ? parseInt(area_max) : null,
+        price: price ? parseFloat(price) : 0,
+        project_type: project_type || 'Căn hộ',
+        province,
+        ward
       }
     });
 
@@ -183,8 +195,9 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Xử lý area_min, area_max
-    if (updateData.area_min) updateData.area_min = parseInt(updateData.area_min);
-    if (updateData.area_max) updateData.area_max = parseInt(updateData.area_max);
+    if (updateData.area_min) updateData.area_min = parseInt(updateData.area_min.toString());
+    if (updateData.area_max) updateData.area_max = parseInt(updateData.area_max.toString());
+    if (updateData.price !== undefined) updateData.price = parseFloat(updateData.price.toString());
 
     // Cập nhật dự án
     const updatedProject = await prisma.projects.update({

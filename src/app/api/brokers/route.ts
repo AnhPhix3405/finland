@@ -10,7 +10,9 @@ export async function GET(request: NextRequest) {
     const is_active = searchParams.get('is_active');
     const search = searchParams.get('search');
     const specialization = searchParams.get('specialization');
-    const working_area = searchParams.get('working_area');
+    const province = searchParams.get('province');
+    const ward = searchParams.get('ward');
+
 
     const skip = (page - 1) * limit;
 
@@ -25,9 +27,13 @@ export async function GET(request: NextRequest) {
       where.specialization = { contains: specialization, mode: 'insensitive' };
     }
 
-    if (working_area) {
-      where.working_area = { contains: working_area, mode: 'insensitive' };
+    if (province) {
+      where.province = { contains: province, mode: 'insensitive' };
     }
+    if (ward) {
+      where.ward = { contains: ward, mode: 'insensitive' };
+    }
+
 
     if (search) {
       where.OR = [
@@ -78,12 +84,15 @@ export async function POST(request: NextRequest) {
       phone,
       email,
       avatar_url,
-      working_area,
+      province,
+      ward,
+      referrer_phone,
       specialization,
       bio,
       is_active = true,
       slug
     } = body;
+
 
     // Validation
     if (!full_name || !phone) {
@@ -122,13 +131,16 @@ export async function POST(request: NextRequest) {
         phone,
         email,
         avatar_url,
-        working_area,
+        province,
+        ward,
+        referrer_phone,
         specialization,
         bio,
         is_active: Boolean(is_active),
         slug
       }
     });
+
 
     return NextResponse.json({
       success: true,

@@ -1,24 +1,51 @@
 'use client';
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useProjectContext } from "@/src/context/ProjectContext";
+import { getProjects, deleteProject } from "@/src/app/modules/projects.service";
+import { deleteAttachmentsByTarget } from "@/src/app/modules/attachments.service";
 
 export default function AdminProjectList() {
   const [projects, setProjects] = useState<any[]>([]);
+  const { setActiveProjectId } = useProjectContext();
+  const router = useRouter();
+
+  const fetchProjects = async () => {
+    try {
+      const json = await getProjects();
+      if (json.success && Array.isArray(json.data)) {
+        setProjects(json.data);
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await fetch('/api/projects');
-        const json = await res.json();
-        if (json.success && Array.isArray(json.data)) {
-          setProjects(json.data);
-        }
-      } catch (error) {
-        console.error('Error fetching projects:', error);
-      }
-    };
     fetchProjects();
   }, []);
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Bạn có chắc muốn xóa dự án "${name}"?`)) return;
+
+    try {
+      const res = await deleteProject(id);
+      if (res.success) {
+        // Xóa luôn các attachments liên quan trên DB và Cloudinary
+        await deleteAttachmentsByTarget(id, 'project');
+
+        // Cập nhật lại state cục bộ hoặc fetch lại
+        setProjects(prev => prev.filter(p => p.id !== id));
+        alert('Xóa dự án và dữ liệu liên quan thành công');
+      } else {
+        alert('Xóa thất bại: ' + (res.error || 'Lỗi không xác định'));
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      alert('Có lỗi xảy ra khi xóa dự án');
+    }
+  };
 
   return (
     <div className="p-6">
@@ -46,10 +73,16 @@ export default function AdminProjectList() {
               <option value="nhapho">Nhà phố</option>
             </select>
           </div>
-          <Link href="/admin/du-an/demo" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-sm text-sm font-medium flex items-center gap-2 transition-colors whitespace-nowrap">
+          <button
+            onClick={() => {
+              setActiveProjectId(null);
+              router.push('/admin/du-an/tao-moi');
+            }}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-sm text-sm font-medium flex items-center gap-2 transition-colors whitespace-nowrap"
+          >
             <span className="material-symbols-outlined text-sm">add</span>
             <span>Thêm dự án mới</span>
-          </Link>
+          </button>
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
@@ -82,10 +115,21 @@ export default function AdminProjectList() {
                       <button className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors p-1" title="Đang hiển thị">
                         <span className="material-symbols-outlined text-xl">visibility</span>
                       </button>
-                      <Link href={`/admin/du-an/${project.slug}`} className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 ml-1" title="Chỉnh sửa">
+                      <button
+                        onClick={() => {
+                          setActiveProjectId(project.id);
+                          router.push(`/admin/du-an/${project.slug}`);
+                        }}
+                        className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 ml-1"
+                        title="Chỉnh sửa"
+                      >
                         <span className="material-symbols-outlined text-lg">edit</span>
-                      </Link>
-                      <button className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 ml-1" title="Xóa">
+                      </button>
+                      <button
+                        onClick={() => handleDelete(project.id, project.name)}
+                        className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 ml-1"
+                        title="Xóa"
+                      >
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
                     </td>

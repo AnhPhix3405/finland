@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import cloudinary from '@/src/lib/cloudinary';
 
 // GET - Lấy danh sách tất cả attachments
 export async function GET(request: NextRequest) {
@@ -139,6 +140,63 @@ export async function POST(request: NextRequest) {
         console.error('Error creating attachment:', error);
         return NextResponse.json(
             { success: false, error: 'Lỗi khi tạo attachment' },
+            { status: 500 }
+        );
+    }
+}
+
+// DELETE - Xóa nhiều attachments theo target_id và target_type
+export async function DELETE(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const target_id = searchParams.get('target_id');
+        const target_type = searchParams.get('target_type');
+
+        if (!target_id || !target_type) {
+            return NextResponse.json(
+                { success: false, error: 'target_id và target_type là bắt buộc' },
+                { status: 400 }
+            );
+        }
+
+        // 1. Lấy danh sách attachments để có public_id xóa trên Cloudinary
+        const attachments = await prisma.attachments.findMany({
+            where: {
+                target_id,
+                target_type
+            }
+        });
+
+        if (attachments.length > 0) {
+            // 2. Xóa trên Cloudinary
+            const publicIds = attachments
+                .filter(img => img.public_id)
+                .map(img => img.public_id as string);
+
+            if (publicIds.length > 0) {
+                await Promise.all(
+                    publicIds.map(pid => cloudinary.uploader.destroy(pid))
+                );
+            }
+
+            // 3. Xóa records trong database
+            await prisma.attachments.deleteMany({
+                where: {
+                    target_id,
+                    target_type
+                }
+            });
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: `Đã xóa ${attachments.length} attachments liên quan.`
+        });
+
+    } catch (error) {
+        console.error('Error deleting bulk attachments:', error);
+        return NextResponse.json(
+            { success: false, error: 'Lỗi khi xóa attachments' },
             { status: 500 }
         );
     }

@@ -3,43 +3,11 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { uploadProjectFile, deleteAttachment } from "@/src/app/modules/upload.service";
+import { getProjects, updateProject } from "@/src/app/modules/projects.service";
+import { useProjectContext } from "@/src/context/ProjectContext";
 import RichTextEditor from "@/src/components/ui/RichTextEditor";
-const provinces = [
-  "Tuyên Quang",
-  "Lào Cai",
-  "Thái Nguyên",
-  "Phú Thọ",
-  "Bắc Ninh",
-  "Hưng Yên",
-  "Hải Phòng",
-  "Ninh Bình",
-  "Quảng Trị",
-  "Đà Nẵng",
-  "Quảng Ngãi",
-  "Gia Lai",
-  "Khánh Hoà",
-  "Lâm Đồng",
-  "Đắk Lắk",
-  "Hồ Chí Minh",
-  "Đồng Nai",
-  "Tây Ninh",
-  "Cần Thơ",
-  "Vĩnh Long",
-  "Đồng Tháp",
-  "Cà Mau",
-  "An Giang",
-  "Hà Nội",
-  "Huế",
-  "Lai Châu",
-  "Điện Biên",
-  "Sơn La",
-  "Lạng Sơn",
-  "Quảng Ninh",
-  "Thanh Hoá",
-  "Nghệ An",
-  "Hà Tĩnh",
-  "Cao Bằng"
-];
+import LocationSelector from "@/src/components/feature/LocationSelector";
+
 interface Attachment {
   id: string;
   url: string;
@@ -54,41 +22,30 @@ interface Attachment {
 export default function AdminProjectDetail() {
   const params = useParams();
   const slug = params?.id as string;
+  const { activeProjectId } = useProjectContext();
 
   const [deletedImages, setDeletedImages] = useState<string[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [description, setDescription] = useState<string>('');
 
+  const [projectName, setProjectName] = useState<string>('');
+  const [projectAreaMin, setProjectAreaMin] = useState<string>('');
+  const [projectAreaMax, setProjectAreaMax] = useState<string>('');
+  const [projectPrice, setProjectPrice] = useState<string>('');
+  const [projectType, setProjectType] = useState<string>('');
+
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('');
-  const [districtsList, setDistrictsList] = useState<{ name: string }[]>([]);
 
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   useEffect(() => {
-    if (!selectedProvince) {
-      setDistrictsList([]);
-      return;
+    if (toast) {
+      const t = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(t);
     }
-    const fetchDistricts = async () => {
-      try {
-        const url = `https://vietnamlabs.com/api/vietnamprovince?province=${encodeURIComponent(selectedProvince)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data?.success && data?.data?.wards) {
-          setDistrictsList(data.data.wards);
-        } else {
-          setDistrictsList([]);
-        }
-      } catch (err) {
-        console.error('Error fetching districts/wards:', err);
-      }
-    };
-    fetchDistricts();
-  }, [selectedProvince]);
+  }, [toast]);
 
-  // Reset selected district when province changes
-  useEffect(() => {
-    setSelectedDistrict('');
-  }, [selectedProvince]);
+
 
 
   // Mock initial images
@@ -107,16 +64,47 @@ export default function AdminProjectDetail() {
 
   useEffect(() => {
     if (!slug) return;
+    const fetchProjectDetails = async () => {
+      try {
+        const res = await getProjects({ slug });
+        if (res.success && res.data.length > 0) {
+          const p = res.data[0];
+          if (p.id) setProjectId(p.id);
+          setProjectName(p.name || '');
+          setProjectAreaMin(p.area_min?.toString() || '');
+          setProjectAreaMax(p.area_max?.toString() || '');
+          setProjectPrice(p.price ? Number(p.price).toLocaleString('en-US') : '');
+          setProjectType(p.project_type || '');
+          setSelectedProvince(p.province || '');
+          setSelectedDistrict(p.ward || '');
+          setDescription(p.content || '');
+        }
+      } catch (err) {
+        console.error('Lỗi lấy thông tin project:', err);
+      }
+    };
+    fetchProjectDetails();
+  }, [slug]);
+
+  const formatCurrencyOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Chỉ giữ lại số
+    const value = e.target.value.replace(/\D/g, '');
+    if (!value) {
+      setProjectPrice('');
+      return;
+    }
+    setProjectPrice(Number(value).toLocaleString('en-US'));
+  };
+
+  useEffect(() => {
+    if (!activeProjectId) return;
     const fetchImages = async () => {
       setLoadingImages(true);
       try {
-        const res = await fetch(`/api/attachments?slug=${encodeURIComponent(slug)}&limit=100`);
+        const res = await fetch(`/api/attachments/${activeProjectId}?target_type=project`);
         const json = await res.json();
         if (json.success) {
           setImages(json.data);
-          if (json.data.length > 0) {
-            setProjectId(json.data[0].project_id);
-          }
         }
       } catch (err) {
         console.error('Lỗi khi tải ảnh từ API:', err);
@@ -125,7 +113,7 @@ export default function AdminProjectDetail() {
       }
     };
     fetchImages();
-  }, [slug]);
+  }, [activeProjectId]);
 
   const handleRemoveApiImage = (id: string) => {
     setDeletedApiImages(prev => [...prev, id]);
@@ -150,18 +138,36 @@ export default function AdminProjectDetail() {
 
   const handleSave = async () => {
     if (!projectId) {
-      alert('Không tìm thấy project ID!');
+      setToast({ message: 'Không tìm thấy project ID!', type: 'error' });
       return;
     }
 
     setIsUploading(true);
     try {
+      const updateRes = await updateProject({
+        id: projectId,
+        name: projectName || 'Dự án cập nhật',
+        slug: slug,
+        province: selectedProvince,
+        ward: selectedDistrict,
+        area_min: projectAreaMin ? Number(projectAreaMin) : undefined,
+        area_max: projectAreaMax ? Number(projectAreaMax) : undefined,
+        price: projectPrice ? Number(projectPrice.replace(/,/g, '')) : undefined,
+        project_type: projectType,
+        content: description,
+      });
+
+      if (!updateRes.success) {
+        throw new Error(updateRes.error || 'Cập nhật database thất bại');
+      }
+
       // Upload tất cả file mới song song
       if (newFiles.length > 0) {
         const results = await Promise.all(
           newFiles.map((file) => uploadProjectFile(file, projectId))
         );
         console.log('Upload results:', results);
+        setNewFiles([]);
       }
 
       // Fire and forget: xóa các attachment API đã đánh dấu xóa
@@ -171,12 +177,13 @@ export default function AdminProjectDetail() {
             .then((res) => console.log('Deleted:', public_id, res))
             .catch((err) => console.error('Delete failed:', public_id, err));
         });
+        setDeletedApiImages([]);
       }
 
-      alert('Lưu dự án thành công!');
-    } catch (error) {
+      setToast({ message: 'Lưu dự án thành công!', type: 'success' });
+    } catch (error: any) {
       console.error('Lỗi khi lưu dự án:', error);
-      alert('Có lỗi xảy ra khi lưu dự án!');
+      setToast({ message: error.message || 'Có lỗi xảy ra khi lưu dự án!', type: 'error' });
     } finally {
       setIsUploading(false);
     }
@@ -193,55 +200,37 @@ export default function AdminProjectDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectName">Tên dự án <span className="text-red-500">*</span></label>
-                <input className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" id="projectName" placeholder="Nhập tên dự án..." type="text" />
+                <input value={projectName} onChange={(e) => setProjectName(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" id="projectName" placeholder="Nhập tên dự án..." type="text" />
               </div>
               <div className="col-span-1">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectType">Loại hình <span className="text-red-500">*</span></label>
-                <select className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700" id="projectType">
+                <select value={projectType} onChange={(e) => setProjectType(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700" id="projectType">
                   <option value="">Chọn loại hình</option>
-                  <option value="canho">Căn hộ</option>
-                  <option value="datnen">Đất nền</option>
-                  <option value="bietthu">Biệt thự</option>
-                  <option value="nhapho">Nhà phố</option>
-                  <option value="shophouse">Shophouse</option>
+                  <option value="Căn hộ">Căn hộ</option>
+                  <option value="Đất nền">Đất nền</option>
+                  <option value="Biệt thự">Biệt thự</option>
+                  <option value="Nhà phố">Nhà phố</option>
+                  <option value="Shophouse">Shophouse</option>
                 </select>
+              </div>
+              <div className="col-span-1 md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectPrice">Giá (VND)</label>
+                <input value={projectPrice} onChange={formatCurrencyOnChange} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" id="projectPrice" placeholder="Ví dụ: 2,500,000,000" type="text" />
               </div>
               <div className="col-span-1">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectArea">Diện tích (m2)</label>
                 <div className="flex flex-row gap-1">
-                  <input className="inline-block min-w-10 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" id="projectAreaMin" placeholder="Từ" type="number" />
-                  <input className="inline-block min-w-10 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" id="projectAreaMax" placeholder="Đến" type="number" />
+                  <input value={projectAreaMin} onChange={(e) => setProjectAreaMin(e.target.value)} className="inline-block min-w-10 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" id="projectAreaMin" placeholder="Từ" type="number" />
+                  <input value={projectAreaMax} onChange={(e) => setProjectAreaMax(e.target.value)} className="inline-block min-w-10 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" id="projectAreaMax" placeholder="Đến" type="number" />
                 </div>
               </div>
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectCity">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
-                <select
-                  value={selectedProvince}
-                  onChange={(e) => setSelectedProvince(e.target.value)}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700"
-                  id="projectCity"
-                >
-                  <option value="">Chọn Tỉnh / Thành phố</option>
-                  {provinces.map((prov) => (
-                    <option key={prov} value={prov}>{prov}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectDistrict">Phường / Xã <span className="text-red-500">*</span></label>
-                <select
-                  value={selectedDistrict}
-                  onChange={(e) => setSelectedDistrict(e.target.value)}
-                  disabled={!selectedProvince || districtsList.length === 0}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-900"
-                  id="projectDistrict"
-                >
-                  <option value="">Chọn Phường/Xã</option>
-                  {districtsList.map((district, idx) => (
-                    <option key={idx} value={district.name}>{district.name}</option>
-                  ))}
-                </select>
-              </div>
+              <LocationSelector
+                selectedProvince={selectedProvince}
+                onProvinceChange={setSelectedProvince}
+                selectedWard={selectedDistrict}
+                onWardChange={setSelectedDistrict}
+              />
+
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mô tả dự án</label>
                 <div className="border border-slate-300 dark:border-slate-600 rounded-[3px] overflow-hidden bg-white dark:bg-slate-800">
@@ -399,6 +388,18 @@ export default function AdminProjectDetail() {
           </form>
         </div>
       </div>
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed bottom-4 right-4 px-4 py-3 rounded-md shadow-lg flex items-center gap-2 transform transition-transform duration-300 translate-y-0 text-sm font-medium z-50 ${toast.type === 'success'
+          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-800'
+          : 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-800'
+          }`}>
+          <span className="material-symbols-outlined text-[18px]">
+            {toast.type === 'success' ? 'check_circle' : 'error'}
+          </span>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }

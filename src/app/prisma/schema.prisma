@@ -33,13 +33,15 @@ model brokers {
   phone          String    @db.VarChar(20)
   email          String?   @db.VarChar(255)
   avatar_url     String?
-  working_area   String?
   specialization String?   @db.VarChar(255)
   bio            String?
   is_active      Boolean?  @default(true)
   slug           String?   @unique @db.VarChar(255)
   created_at     DateTime? @default(now()) @db.Timestamptz(6)
   updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+  province       String?   @db.VarChar(100)
+  ward           String?   @db.VarChar(100)
+  referrer_phone String?   @db.VarChar(20)
 }
 
 model project_tags {
@@ -53,21 +55,23 @@ model project_tags {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model projects {
-  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  project_code  String?         @unique @db.VarChar(50)
+  id            String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  project_code  String?        @unique @db.VarChar(50)
   name          String
-  slug          String          @unique @db.VarChar(255)
-  developer     String?         @db.VarChar(255)
-  contact_name  String?         @db.VarChar(255)
-  contact_phone String?         @db.VarChar(20)
+  slug          String         @unique @db.VarChar(255)
+  developer     String?        @db.VarChar(255)
+  contact_name  String?        @db.VarChar(255)
+  contact_phone String?        @db.VarChar(20)
   content       String?
-  status        project_status? @default(s_p_m__b_n)
   area_min      Int?
   area_max      Int?
-  created_at    DateTime?       @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime?       @default(now()) @db.Timestamptz(6)
-  province      String?         @db.VarChar(100)
-  ward          String?         @db.VarChar(100)
+  created_at    DateTime?      @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime?      @default(now()) @db.Timestamptz(6)
+  province      String?        @db.VarChar(100)
+  ward          String?        @db.VarChar(100)
+  project_type  String         @default("Căn hộ") @db.VarChar(100)
+  price         Decimal        @default(0) @db.Decimal(15, 2)
+  status        String?
   project_tags  project_tags[]
 }
 
