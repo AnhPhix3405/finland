@@ -28,21 +28,21 @@ model attachments {
 }
 
 model brokers {
-  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  full_name      String    @db.VarChar(255)
-  phone          String    @db.VarChar(20)
-  email          String?   @db.VarChar(255)
+  id             String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  full_name      String     @db.VarChar(255)
+  phone          String     @db.VarChar(20)
+  email          String?    @db.VarChar(255)
   avatar_url     String?
-  specialization String?   @db.VarChar(255)
+  specialization String?    @db.VarChar(255)
   bio            String?
-  is_active      Boolean?  @default(true)
-  slug           String?   @unique @db.VarChar(255)
-  created_at     DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
-  province       String?   @db.VarChar(100)
-  ward           String?   @db.VarChar(100)
-  referrer_phone String?   @db.VarChar(20)
+  is_active      Boolean?   @default(true)
+  created_at     DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime?  @default(now()) @db.Timestamptz(6)
+  province       String?    @db.VarChar(100)
+  ward           String?    @db.VarChar(100)
+  referrer_phone String?    @db.VarChar(20)
   password_hash  String?
+  listings       listings[]
 }
 
 model project_tags {
@@ -82,6 +82,26 @@ model tags {
   slug         String         @unique @db.VarChar(120)
   created_at   DateTime?      @default(now()) @db.Timestamptz(6)
   project_tags project_tags[]
+}
+
+model listings {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  broker_id        String   @db.Uuid
+  title            String
+  description      String
+  transaction_type String   @db.VarChar(20)
+  property_type    String   @db.VarChar(50)
+  province         String   @db.VarChar(100)
+  ward             String   @db.VarChar(100)
+  address          String?
+  area             Decimal? @db.Decimal(10, 2)
+  width            Decimal? @db.Decimal(6, 2)
+  length           Decimal? @db.Decimal(6, 2)
+  price            BigInt?
+  direction        String?  @db.VarChar(20)
+  visibility       Boolean? @default(true)
+  status           String?
+  brokers          brokers  @relation(fields: [broker_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_listings_broker")
 }
 
 enum post_status {

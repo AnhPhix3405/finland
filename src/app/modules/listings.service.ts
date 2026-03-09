@@ -1,0 +1,82 @@
+import { v4 as uuidv4 } from 'uuid';
+
+export interface CreateListingData {
+  broker_id: string;
+  title: string;
+  description: string;
+  transaction_type: string;
+  property_type: string;
+  province: string;
+  ward: string;
+  address?: string;
+  area?: number;
+  width?: number;
+  length?: number;
+  price?: bigint;
+  direction?: string;
+  visibility?: boolean;
+  status?: string;
+}
+
+export interface ListingResponse {
+  id: string;
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+// Temporary method to create listing with UUID (không call API thật)
+export function createListingLocal(data: Partial<CreateListingData>): ListingResponse {
+  const listingId = uuidv4();
+  
+  // Validate required fields if needed
+  if (!data.title || !data.description) {
+    return {
+      id: "",
+      success: false,
+      error: "Title and description are required"
+    };
+  }
+  
+  console.log("Created listing locally with ID:", listingId);
+  console.log("Listing data:", data);
+  
+  return {
+    id: listingId,
+    success: true,
+    message: "Listing created successfully"
+  };
+}
+
+export async function createListing(data: CreateListingData): Promise<ListingResponse> {
+  try {
+    const response = await fetch('/api/listings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error creating listing:', error);
+    return {
+      id: "",
+      success: false,
+      error: 'Failed to create listing'
+    };
+  }
+}
+
+export async function getListings(): Promise<any[]> {
+  try {
+    const response = await fetch('/api/listings');
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error('Error fetching listings:', error);
+    return [];
+  }
+}

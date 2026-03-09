@@ -161,3 +161,43 @@ export async function uploadAttachments(file: File) {
     console.log(err)
   }
 }
+
+export async function uploadListingAttachments(file: File, listingId: string) {
+  // lấy chữ ký
+  const signRes = await fetch("/api/upload/listings/sign", {
+    method: "POST"
+  })
+
+  const { timestamp, signature, cloudName, apiKey } =
+    await signRes.json()
+
+  const formData = new FormData()
+
+  formData.append("file", file)
+  formData.append("api_key", apiKey)
+  formData.append("timestamp", timestamp)
+  formData.append("signature", signature)
+  formData.append("folder", "finland/listings")
+
+  const uploadRes = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+    {
+      method: "POST",
+      body: formData
+    }
+  )
+  const uploadData = await uploadRes.json()
+  console.log("uploadData", uploadData)
+  const attachmentData: AttachmentData = {
+    url: uploadData.url,
+    secure_url: uploadData.secure_url,
+    size_bytes: uploadData.bytes.toString(),
+    original_name: uploadData.original_filename,
+    public_id: uploadData.public_id,
+    target_id: listingId,
+    target_type: "listing"
+  }
+  console.log("attachmentData", attachmentData)
+  await createAttachment(attachmentData)
+  return uploadData;
+}
