@@ -52,6 +52,16 @@ export default function DebugUserPage() {
         </div>
 
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+          <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Test Navigation:</h3>
+          <div className="space-y-2 text-sm">
+            <div><a href="/dang-nhap" className="text-blue-600 hover:underline">→ Đăng nhập</a></div>
+            <div><a href="/dang-ky" className="text-blue-600 hover:underline">→ Đăng ký</a></div>
+            <div><a href="/tai-khoan" className="text-blue-600 hover:underline">→ Trang tài khoản</a></div>
+            <div><a href="/test/debug-broker" className="text-blue-600 hover:underline">→ Debug broker updates</a></div>
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
           <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Instructions:</h3>
           <ol className="list-decimal list-inside space-y-1 text-sm text-yellow-700 dark:text-yellow-300">
             <li>Try logging in from <a href="/dang-nhap" className="underline">đăng nhập page</a></li>

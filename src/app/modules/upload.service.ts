@@ -91,7 +91,9 @@ export async function uploadBrokerAvatar(file: File, brokerSlug: string) {
     )
     const uploadData = await uploadRes.json()
     console.log("uploadData", uploadData)
-    await fetch("/api/brokers", {
+    
+    // Update broker avatar_url in database
+    const updateRes = await fetch("/api/brokers", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -99,7 +101,17 @@ export async function uploadBrokerAvatar(file: File, brokerSlug: string) {
         avatar_url: uploadData.secure_url
       })
     })
-    return uploadData;
+    
+    const updateResult = await updateRes.json()
+    
+    if (!updateResult.success) {
+      throw new Error(updateResult.error || 'Failed to update broker avatar')
+    }
+    
+    return {
+      ...uploadData,
+      brokerUpdate: updateResult
+    };
   }
   catch (err) {
     console.log(err)
