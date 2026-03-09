@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { brokersWhereInput } from '../../generated/prisma/models';
+import { hashPassword } from '@/src/app/modules/auth/passwordHasher';
+
 // GET - Lấy danh sách tất cả môi giới
 export async function GET(request: NextRequest) {
   try {
@@ -54,9 +56,12 @@ export async function GET(request: NextRequest) {
       orderBy: { created_at: 'desc' }
     });
 
+    // Trả về danh sách môi giới (không bao gồm password_hash)
+    const safeBrokers = brokers.map(({ password_hash, ...rest }) => rest);
+
     return NextResponse.json({
       success: true,
-      data: brokers,
+      data: safeBrokers,
       pagination: {
         page,
         limit,
@@ -64,6 +69,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(totalCount / limit)
       }
     });
+
 
   } catch (error) {
     console.error('Error fetching brokers:', error);
@@ -74,94 +80,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Tạo môi giới mới
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-
-    const {
-      full_name,
-      phone,
-      email,
-      avatar_url,
-      province,
-      ward,
-      referrer_phone,
-      specialization,
-      bio,
-      is_active = true,
-      slug
-    } = body;
-
-
-    // Validation
-    if (!full_name || !phone) {
-      return NextResponse.json(
-        { success: false, error: 'Họ tên và số điện thoại là bắt buộc' },
-        { status: 400 }
-      );
-    }
-
-    // Kiểm tra phone và slug đã tồn tại chưa
-    const existingBroker = await prisma.brokers.findFirst({
-      where: {
-        OR: [
-          { phone: phone },
-          ...(slug ? [{ slug: slug }] : []),
-          ...(email ? [{ email: email }] : [])
-        ]
-      }
-    });
-
-    if (existingBroker) {
-      let errorMessage = 'Số điện thoại đã tồn tại';
-      if (existingBroker.slug === slug) errorMessage = 'Slug đã tồn tại';
-      if (existingBroker.email === email) errorMessage = 'Email đã tồn tại';
-
-      return NextResponse.json(
-        { success: false, error: errorMessage },
-        { status: 400 }
-      );
-    }
-
-    // Tạo môi giới mới
-    const newBroker = await prisma.brokers.create({
-      data: {
-        full_name,
-        phone,
-        email,
-        avatar_url,
-        province,
-        ward,
-        referrer_phone,
-        specialization,
-        bio,
-        is_active: Boolean(is_active),
-        slug
-      }
-    });
-
-
-    return NextResponse.json({
-      success: true,
-      data: newBroker,
-      message: 'Tạo môi giới thành công'
-    }, { status: 201 });
-
-  } catch (error) {
-    console.error('Error creating broker:', error);
-    return NextResponse.json(
-      { success: false, error: 'Lỗi khi tạo môi giới' },
-      { status: 500 }
-    );
-  }
-}
-
 // PATCH - Cập nhật môi giới theo slug
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { slug, ...updateData } = body;
+    const { slug, password, ...updateData } = body;
+
 
     if (!slug) {
       return NextResponse.json(
@@ -212,25 +136,34 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
+    // Xử lý hash password nếu client gửi password mới
+    const finalUpdateData: any = { ...updateData };
+    if (password) {
+      finalUpdateData.password_hash = await hashPassword(password);
+    }
+
     // Xử lý is_active
-    if (updateData.is_active !== undefined) {
-      updateData.is_active = Boolean(updateData.is_active);
+    if (finalUpdateData.is_active !== undefined) {
+      finalUpdateData.is_active = Boolean(finalUpdateData.is_active);
     }
 
     // Cập nhật môi giới
     const updatedBroker = await prisma.brokers.update({
       where: { id },
       data: {
-        ...updateData,
+        ...finalUpdateData,
         updated_at: new Date()
       }
     });
 
+    const { password_hash: _, ...safeUpdatedBroker } = updatedBroker;
+
     return NextResponse.json({
       success: true,
-      data: updatedBroker,
+      data: safeUpdatedBroker,
       message: 'Cập nhật môi giới thành công'
     });
+
 
   } catch (error) {
     console.error('Error updating broker:', error);

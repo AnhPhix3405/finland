@@ -20,7 +20,9 @@ export async function GET(
             );
         }
 
-        return NextResponse.json({ success: true, data: broker });
+        const { password_hash, ...safeBroker } = broker;
+
+        return NextResponse.json({ success: true, data: safeBroker });
 
     } catch (error) {
         console.error('Error fetching broker:', error);

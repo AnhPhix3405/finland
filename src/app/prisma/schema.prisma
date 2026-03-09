@@ -42,6 +42,7 @@ model brokers {
   province       String?   @db.VarChar(100)
   ward           String?   @db.VarChar(100)
   referrer_phone String?   @db.VarChar(20)
+  password_hash  String?
 }
 
 model project_tags {
