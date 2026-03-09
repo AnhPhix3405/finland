@@ -94,7 +94,7 @@ export function LoginForm() {
               type={showPassword ? "text" : "password"}
               id="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value``)}
               placeholder="Nhập mật khẩu"
               required
               disabled={isLoading}
