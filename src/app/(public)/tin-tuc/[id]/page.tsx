@@ -2,10 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, ChevronRight, Share2, Clock, Tag, MessageSquare } from 'lucide-react';
 
 export default function NewsDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
 
   // Mock content that would normally come from TipTap editor
@@ -33,53 +35,61 @@ export default function NewsDetailPage() {
   `;
 
   return (
-    <div className="bg-white dark:bg-slate-900 min-h-screen">
-      {/* Breadcrumb Header */}
-      <div className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 py-4">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+    <div className="bg-white dark:bg-slate-900 min-h-screen pt-6 pb-12">
+      {/* 1. Integrated Navigation Row */}
+      <div className="max-w-4xl mx-auto px-4 mb-8">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-slate-500 hover:text-emerald-600 transition-colors text-[11px] font-bold group"
+          >
+            <ArrowLeft className="size-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            <span>Quay lại</span>
+          </button>
+          
+          <div className="w-px h-2.5 bg-slate-200 dark:bg-slate-800" />
+
+          <nav className="flex items-center gap-2 text-[11px] text-slate-400">
             <Link href="/" className="hover:text-emerald-600 transition-colors">Trang chủ</Link>
-            <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+            <ChevronRight className="size-3" />
             <Link href="/tin-tuc" className="hover:text-emerald-600 transition-colors">Tin tức</Link>
-            <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-            <span className="text-slate-900 dark:text-slate-100 font-medium line-clamp-1 truncate">Chi tiết bài viết</span>
-          </div>
+            <ChevronRight className="size-3" />
+            <span className="text-slate-600 dark:text-slate-200 font-medium">Chi tiết bài viết</span>
+          </nav>
         </div>
       </div>
 
-      <article className="max-w-4xl mx-auto px-4 py-12">
+      <article className="max-w-4xl mx-auto px-4">
         {/* Post Meta */}
-        <header className="mb-10">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
+        <header className="mb-10 space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="bg-emerald-600 text-white text-[9px] font-black px-2 py-1 rounded uppercase tracking-[0.1em]">
               Thị trường
             </span>
-            <span className="text-slate-400 text-sm">•</span>
-            <span className="text-slate-500 dark:text-slate-400 text-sm italic">Đăng ngày 10/03/2026</span>
+            <div className="flex items-center gap-1.5 text-slate-400 text-[11px] font-medium">
+              <Clock className="size-3.5" />
+              <span>Đăng ngày 10/03/2026</span>
+            </div>
           </div>
 
-          <h1 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white leading-tight mb-6">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white leading-tight">
             Thị trường Bất động sản phía Nam sôi động trở lại trong quý 1/2026
           </h1>
 
-          <div className="flex items-center justify-between py-6 border-y border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between py-4 border-y border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold">
-                A
+              <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-bold text-sm">
+                BBT
               </div>
               <div>
                 <p className="text-sm font-bold text-slate-900 dark:text-white">Ban biên tập finland.vn</p>
-                <p className="text-xs text-slate-500">Chuyên gia phân tích thị trường</p>
+                <p className="text-[11px] text-slate-500">Chuyên gia phân tích thị trường</p>
               </div>
             </div>
-            <div className="flex gap-4 text-slate-500">
-              <span className="flex items-center gap-1.5 text-sm">
-                <span className="material-symbols-outlined text-[18px]">visibility</span>
-                1.2k lượt xem
-              </span>
-              <button className="flex items-center gap-1.5 text-sm hover:text-emerald-600 transition-colors">
-                <span className="material-symbols-outlined text-[18px]">share</span>
-                Chia sẻ
+            <div className="flex gap-4">
+              <button className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-emerald-600 transition-colors">
+                <Share2 className="size-4" />
+                <span>Chia sẻ</span>
               </button>
             </div>
           </div>
@@ -110,12 +120,12 @@ export default function NewsDetailPage() {
         {/* Post Tags */}
         <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
           <div className="flex flex-wrap gap-2">
-            <span className="text-sm text-slate-500 mr-2 flex items-center gap-1 mt-1">
-              <span className="material-symbols-outlined text-[18px]">label</span>
-              Tags:
-            </span>
+            <div className="text-[11px] font-bold text-slate-400 mr-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <Tag className="size-3.5" />
+              <span>Tags:</span>
+            </div>
             {['#thitruong', '#batdongsan2026', '#quyhoach', '#dautu'].map(tag => (
-              <span key={tag} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-xs hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer">
+              <span key={tag} className="px-3 py-1 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 rounded-full text-[11px] font-medium hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border border-slate-100 dark:border-slate-800">
                 {tag}
               </span>
             ))}
@@ -123,16 +133,16 @@ export default function NewsDetailPage() {
         </div>
 
         {/* Post Navigation */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800">
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 dark:bg-slate-800/20 rounded-xl border border-slate-100 dark:border-slate-800">
           <Link href="/tin-tuc/2" className="group">
-            <p className="text-xs text-slate-500 uppercase font-bold mb-2">Bài trước</p>
+            <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-2">Bài trước</p>
             <h4 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors line-clamp-1">
               7 lưu ý quan trọng khi kiểm tra quy hoạch đất đai
             </h4>
           </Link>
           <div className="text-right border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700 pt-4 md:pt-0 md:pl-6">
-            <p className="text-xs text-slate-500 uppercase font-bold mb-2">Bài tiếp theo</p>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 italic">Đang cập nhật...</h4>
+            <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-2">Bài tiếp theo</p>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 italic opacity-50">Đang cập nhật...</h4>
           </div>
         </div>
       </article>

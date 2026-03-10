@@ -1,186 +1,145 @@
+"use client";
+
 import { Metadata } from "next";
 import Link from "next/link";
 import { PropertyFilter } from "../../../components/property/PropertyFilter";
 import { Pagination } from "../../../components/shared/Pagination";
-
-export const metadata: Metadata = {
-  title: "Danh Sách Dự Án - finland.vn",
-};
+import { MapPin, ChevronRight, Building2, ArrowRight } from "lucide-react";
 
 export default function ProjectList() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <nav aria-label="Breadcrumb" className="flex mb-4">
-        <ol className="inline-flex items-center space-x-1 md:space-x-2">
-          <li className="inline-flex items-center">
-            <Link className="text-xs text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors uppercase tracking-wider font-semibold" href="/">Trang chủ</Link>
-          </li>
-          <li>
-            <div className="flex items-center">
-              <span className="text-gray-400 text-xs mx-1">/</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Danh sách dự án</span>
-            </div>
-          </li>
-        </ol>
-      </nav>
-      <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-6 uppercase tracking-tight">DANH SÁCH DỰ ÁN BẤT ĐỘNG SẢN</h1>
-      
-      <PropertyFilter hidePrice={true} />
+    <div className="bg-white dark:bg-slate-950 min-h-screen pt-6 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Optimized Navigation */}
+        <div className="flex items-center gap-3 mb-6">
+          <Link 
+            href="/"
+            className="flex items-center gap-1.5 text-slate-500 hover:text-emerald-600 transition-colors text-[11px] font-bold group"
+          >
+            <span>Trang chủ</span>
+          </Link>
+          
+          <div className="w-px h-2.5 bg-slate-200 dark:bg-slate-800" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex flex-col hover:border-primary transition-colors shadow-sm">
-          <div className="relative h-48">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="Vinhomes Ocean Park 3" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDegODUZ6REUfZ6wkYPWzTvrGzNKwi9JzombB3Jm48DAIJ6gU_Hcip9JPHZawF2rOio2uMXLrU1OxdeQEccJN8BVYW3aLazAcmZuCXbn17s81oYARqRzA-VpwhKIjoRnPYKUdiVh2LRe0G7cZ-0UnMSkC8uZokSoX-EuTpK-RoVvRFwTlG0oEnHn3JFa5oYq9rSfn0VyqzW2enpvmLRt07e7y42Ow2L-dFD6LKIXCOG6f-ZQ2E3R6496POzsn00YuELKLh2o2H1XF1O"/>
-            <div className="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
-              Đang mở bán
-            </div>
+          <nav className="flex items-center gap-2 text-[11px] text-slate-400">
+            <span>Dự án</span>
+            <ChevronRight className="size-3" />
+            <span className="text-slate-600 dark:text-slate-200 font-medium whitespace-nowrap">Danh sách dự án</span>
+          </nav>
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-2">
+              DANH SÁCH DỰ ÁN
+            </h1>
+            <p className="text-sm text-slate-500 font-medium">Khám phá không gian sống đẳng cấp từ các dự án hàng đầu</p>
           </div>
-          <div className="p-4 flex-grow flex flex-col">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 line-clamp-2 hover:text-primary cursor-pointer transition-colors leading-tight">Vinhomes Ocean Park 3</h3>
-            <div className="flex items-center text-xs text-gray-500 dark:text-slate-400 mb-3 truncate">
-              <span className="material-symbols-outlined text-[14px] mr-1 text-gray-400">location_on</span>
-              Văn Giang, Hưng Yên
-            </div>
-            <div className="flex justify-end items-center mb-4 mt-auto">
-              <span className="text-xs font-medium text-gray-500 dark:text-slate-400">75 m²</span>
-            </div>
-            <div className="mt-auto pt-3 border-t border-gray-100 dark:border-slate-700">
-              <a className="flex justify-center items-center w-full px-4 py-2 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-xs font-bold uppercase tracking-wider transition-colors" href="/du-an/demo">
-                XEM CHI TIẾT
-              </a>
-            </div>
-          </div>
+          <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800 hidden md:block mb-4 mx-8" />
         </div>
         
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex flex-col hover:border-primary transition-colors shadow-sm">
-          <div className="relative h-48">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="Khu đô thị Aqua City" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsMeEiB-shjejI2MZohhnY1E4ZqZviwN4BtQM5XyfoKFguCaoH4EIbZMQhQGIDbelvkQNbHOY7ok5w3aKy5kDO-GK9fwG32LrAi64RwxkqKX31C8IvFMjpwS6DuzYPfUJ9DkoeXM7dgN5aPywVa8Oaz0vzCZ7w5zzNzU50GzO_gJdjiajPHmAVDuygloybiE3FCYNujYDXPICxDdTh0rs4ZxLWLVqsy3L7PfTtoXfL_9-5QMKrut-C2w0YkFBF1IDkxczDnFMBsPTX"/>
-            <div className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
-              Sắp bàn giao
-            </div>
-          </div>
-          <div className="p-4 flex-grow flex flex-col">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 line-clamp-2 hover:text-primary cursor-pointer transition-colors leading-tight">Khu đô thị sinh thái thông minh Aqua City</h3>
-            <div className="flex items-center text-xs text-gray-500 dark:text-slate-400 mb-3 truncate">
-              <span className="material-symbols-outlined text-[14px] mr-1 text-gray-400">location_on</span>
-              Biên Hòa, Đồng Nai
-            </div>
-            <div className="flex justify-end items-center mb-4 mt-auto">
-              <span className="text-xs font-medium text-gray-500 dark:text-slate-400">120 m²</span>
-            </div>
-            <div className="mt-auto pt-3 border-t border-gray-100 dark:border-slate-700">
-              <a className="flex justify-center items-center w-full px-4 py-2 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-xs font-bold uppercase tracking-wider transition-colors" href="/du-an/demo">
-                XEM CHI TIẾT
-              </a>
-            </div>
-          </div>
+        <div className="mb-10">
+          <PropertyFilter hidePrice={true} />
         </div>
 
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex flex-col hover:border-primary transition-colors shadow-sm">
-          <div className="relative h-48">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="Masteri Centre Point" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9b2hFSFxaOuDlxVhafP7OzZUSTbxay9I4hadpxI_oHuHGJcdagL-ls1TQ57H7kADtmWdGELHQWeDxwJN0LEpJw2evOuCDRd1VyhAxpg0B3pZDd0SKPM4Z9a_72kjBO46KWmTzCh0ceySePMso8k_Gs3fxJy9TWc80-HIKCfNRugpvfUXiyTQM5TcdjVlHj-Q8GIuvoFEvAJvK6k5j44g-lRwsbnA2ILZutTVtyEtB67anekCfI14HlaogL0PbtR9mgdgf1dGYoTbY"/>
-            <div className="absolute top-2 left-2 bg-gray-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
-              Đã bàn giao
-            </div>
-          </div>
-          <div className="p-4 flex-grow flex flex-col">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 line-clamp-2 hover:text-primary cursor-pointer transition-colors leading-tight">Khu căn hộ compound cao cấp Masteri Centre Point</h3>
-            <div className="flex items-center text-xs text-gray-500 dark:text-slate-400 mb-3 truncate">
-              <span className="material-symbols-outlined text-[14px] mr-1 text-gray-400">location_on</span>
-              Quận 9, TP.HCM
-            </div>
-            <div className="flex justify-end items-center mb-4 mt-auto">
-              <span className="text-xs font-medium text-gray-500 dark:text-slate-400">50 m²</span>
-            </div>
-            <div className="mt-auto pt-3 border-t border-gray-100 dark:border-slate-700">
-              <a className="flex justify-center items-center w-full px-4 py-2 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-xs font-bold uppercase tracking-wider transition-colors" href="/du-an/demo">
-                XEM CHI TIẾT
-              </a>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {MOCK_PROJECTS.map((project, idx) => (
+            <Link 
+              key={idx}
+              href="/du-an/demo"
+              className="group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex flex-col hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 rounded-xl overflow-hidden"
+            >
+              <div className="relative h-56 overflow-hidden">
+                <img 
+                  alt={project.title} 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                  src={project.image}
+                />
+                <div className="absolute top-4 left-4">
+                  <span className={`text-[9px] font-black px-2.5 py-1.5 rounded uppercase tracking-widest text-white shadow-lg ${project.statusColor}`}>
+                    {project.status}
+                  </span>
+                </div>
+              </div>
+              <div className="p-6 flex-grow flex flex-col">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors leading-snug">
+                  {project.title}
+                </h3>
+                <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 mb-4 font-medium">
+                  <MapPin className="size-3.5 mr-1.5 text-emerald-500" />
+                  {project.location}
+                </div>
+                
+                <div className="mt-auto flex items-center justify-between pt-5 border-t border-slate-50 dark:border-slate-800">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Quy mô</span>
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{project.area}</span>
+                  </div>
+                  <span className="flex items-center gap-1.5 text-xs font-black text-emerald-600 group-hover:translate-x-1 transition-transform">
+                    XEM CHI TIẾT
+                    <ArrowRight className="size-3.5" />
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
 
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex flex-col hover:border-primary transition-colors shadow-sm">
-          <div className="relative h-48">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="The Global City" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDegODUZ6REUfZ6wkYPWzTvrGzNKwi9JzombB3Jm48DAIJ6gU_Hcip9JPHZawF2rOio2uMXLrU1OxdeQEccJN8BVYW3aLazAcmZuCXbn17s81oYARqRzA-VpwhKIjoRnPYKUdiVh2LRe0G7cZ-0UnMSkC8uZokSoX-EuTpK-RoVvRFwTlG0oEnHn3JFa5oYq9rSfn0VyqzW2enpvmLRt07e7y42Ow2L-dFD6LKIXCOG6f-ZQ2E3R6496POzsn00YuELKLh2o2H1XF1O"/>
-            <div className="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
-              Đang mở bán
-            </div>
-          </div>
-          <div className="p-4 flex-grow flex flex-col">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 line-clamp-2 hover:text-primary cursor-pointer transition-colors leading-tight">The Global City</h3>
-            <div className="flex items-center text-xs text-gray-500 dark:text-slate-400 mb-3 truncate">
-              <span className="material-symbols-outlined text-[14px] mr-1 text-gray-400">location_on</span>
-              TP. Thủ Đức, TP.HCM
-            </div>
-            <div className="flex justify-end items-center mb-4 mt-auto">
-              <span className="text-xs font-medium text-gray-500 dark:text-slate-400">95 m²</span>
-            </div>
-            <div className="mt-auto pt-3 border-t border-gray-100 dark:border-slate-700">
-              <a className="flex justify-center items-center w-full px-4 py-2 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-xs font-bold uppercase tracking-wider transition-colors" href="/du-an/demo">
-                XEM CHI TIẾT
-              </a>
-            </div>
-          </div>
+        <div className="mt-16">
+          <Pagination />
         </div>
-
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex flex-col hover:border-primary transition-colors shadow-sm">
-          <div className="relative h-48">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="Vinhomes Smart City" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsMeEiB-shjejI2MZohhnY1E4ZqZviwN4BtQM5XyfoKFguCaoH4EIbZMQhQGIDbelvkQNbHOY7ok5w3aKy5kDO-GK9fwG32LrAi64RwxkqKX31C8IvFMjpwS6DuzYPfUJ9DkoeXM7dgN5aPywVa8Oaz0vzCZ7w5zzNzU50GzO_gJdjiajPHmAVDuygloybiE3FCYNujYDXPICxDdTh0rs4ZxLWLVqsy3L7PfTtoXfL_9-5QMKrut-C2w0YkFBF1IDkxczDnFMBsPTX"/>
-            <div className="absolute top-2 left-2 bg-gray-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
-              Đã bàn giao
-            </div>
-          </div>
-          <div className="p-4 flex-grow flex flex-col">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 line-clamp-2 hover:text-primary cursor-pointer transition-colors leading-tight">Vinhomes Smart City</h3>
-            <div className="flex items-center text-xs text-gray-500 dark:text-slate-400 mb-3 truncate">
-              <span className="material-symbols-outlined text-[14px] mr-1 text-gray-400">location_on</span>
-              Nam Từ Liêm, Hà Nội
-            </div>
-            <div className="flex justify-end items-center mb-4 mt-auto">
-              <span className="text-xs font-medium text-gray-500 dark:text-slate-400">43 m²</span>
-            </div>
-            <div className="mt-auto pt-3 border-t border-gray-100 dark:border-slate-700">
-              <a className="flex justify-center items-center w-full px-4 py-2 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-xs font-bold uppercase tracking-wider transition-colors" href="/du-an/demo">
-                XEM CHI TIẾT
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex flex-col hover:border-primary transition-colors shadow-sm">
-          <div className="relative h-48">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="Ecopark" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9b2hFSFxaOuDlxVhafP7OzZUSTbxay9I4hadpxI_oHuHGJcdagL-ls1TQ57H7kADtmWdGELHQWeDxwJN0LEpJw2evOuCDRd1VyhAxpg0B3pZDd0SKPM4Z9a_72kjBO46KWmTzCh0ceySePMso8k_Gs3fxJy9TWc80-HIKCfNRugpvfUXiyTQM5TcdjVlHj-Q8GIuvoFEvAJvK6k5j44g-lRwsbnA2ILZutTVtyEtB67anekCfI14HlaogL0PbtR9mgdgf1dGYoTbY"/>
-            <div className="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
-              Đang mở bán
-            </div>
-          </div>
-          <div className="p-4 flex-grow flex flex-col">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 line-clamp-2 hover:text-primary cursor-pointer transition-colors leading-tight">Khu đô thị sinh thái Ecopark</h3>
-            <div className="flex items-center text-xs text-gray-500 dark:text-slate-400 mb-3 truncate">
-              <span className="material-symbols-outlined text-[14px] mr-1 text-gray-400">location_on</span>
-              Văn Giang, Hưng Yên
-            </div>
-            <div className="flex justify-end items-center mb-4 mt-auto">
-              <span className="text-xs font-medium text-gray-500 dark:text-slate-400">65 m²</span>
-            </div>
-            <div className="mt-auto pt-3 border-t border-gray-100 dark:border-slate-700">
-              <a className="flex justify-center items-center w-full px-4 py-2 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-xs font-bold uppercase tracking-wider transition-colors" href="/du-an/demo">
-                XEM CHI TIẾT
-              </a>
-            </div>
-          </div>
-        </div>
-
       </div>
-
-      <Pagination />
     </div>
   );
 }
+
+const MOCK_PROJECTS = [
+  {
+    title: "Vinhomes Ocean Park 3",
+    location: "Văn Giang, Hưng Yên",
+    area: "294 ha",
+    status: "Đang mở bán",
+    statusColor: "bg-emerald-600",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDegODUZ6REUfZ6wkYPWzTvrGzNKwi9JzombB3Jm48DAIJ6gU_Hcip9JPHZawF2rOio2uMXLrU1OxdeQEccJN8BVYW3aLazAcmZuCXbn17s81oYARqRzA-VpwhKIjoRnPYKUdiVh2LRe0G7cZ-0UnMSkC8uZokSoX-EuTpK-RoVvRFwTlG0oEnHn3JFa5oYq9rSfn0VyqzW2enpvmLRt07e7y42Ow2L-dFD6LKIXCOG6f-ZQ2E3R6496POzsn00YuELKLh2o2H1XF1O"
+  },
+  {
+    title: "Khu đô thị sinh thái Aqua City",
+    location: "Biên Hòa, Đồng Nai",
+    area: "1000 ha",
+    status: "Sắp bàn giao",
+    statusColor: "bg-blue-600",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCsMeEiB-shjejI2MZohhnY1E4ZqZviwN4BtQM5XyfoKFguCaoH4EIbZMQhQGIDbelvkQNbHOY7ok5w3aKy5kDO-GK9fwG32LrAi64RwxkqKX31C8IvFMjpwS6DuzYPfUJ9DkoeXM7dgN5aPywVa8Oaz0vzCZ7w5zzNzU50GzO_gJdjiajPHmAVDuygloybiE3FCYNujYDXPICxDdTh0rs4ZxLWLVqsy3L7PfTtoXfL_9-5QMKrut-C2w0YkFBF1IDkxczDnFMBsPTX"
+  },
+  {
+    title: "Masteri Centre Point",
+    location: "Quận 9, TP.HCM",
+    area: "7.07 ha",
+    status: "Đã bàn giao",
+    statusColor: "bg-slate-600",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA9b2hFSFxaOuDlxVhafP7OzZUSTbxay9I4hadpxI_oHuHGJcdagL-ls1TQ57H7kADtmWdGELHQWeDxwJN0LEpJw2evOuCDRd1VyhAxpg0B3pZDd0SKPM4Z9a_72kjBO46KWmTzCh0ceySePMso8k_Gs3fxJy9TWc80-HIKCfNRugpvfUXiyTQM5TcdjVlHj-Q8GIuvoFEvAJvK6k5j44g-lRwsbnA2ILZutTVtyEtB67anekCfI14HlaogL0PbtR9mgdgf1dGYoTbY"
+  },
+  {
+    title: "The Global City",
+    location: "TP. Thủ Đức, TP.HCM",
+    area: "117 ha",
+    status: "Đang mở bán",
+    statusColor: "bg-emerald-600",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDegODUZ6REUfZ6wkYPWzTvrGzNKwi9JzombB3Jm48DAIJ6gU_Hcip9JPHZawF2rOio2uMXLrU1OxdeQEccJN8BVYW3aLazAcmZuCXbn17s81oYARqRzA-VpwhKIjoRnPYKUdiVh2LRe0G7cZ-0UnMSkC8uZokSoX-EuTpK-RoVvRFwTlG0oEnHn3JFa5oYq9rSfn0VyqzW2enpvmLRt07e7y42Ow2L-dFD6LKIXCOG6f-ZQ2E3R6496POzsn00YuELKLh2o2H1XF1O"
+  },
+  {
+    title: "Vinhomes Smart City",
+    location: "Nam Từ Liêm, Hà Nội",
+    area: "280 ha",
+    status: "Đã bàn giao",
+    statusColor: "bg-slate-600",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCsMeEiB-shjejI2MZohhnY1E4ZqZviwN4BtQM5XyfoKFguCaoH4EIbZMQhQGIDbelvkQNbHOY7ok5w3aKy5kDO-GK9fwG32LrAi64RwxkqKX31C8IvFMjpwS6DuzYPfUJ9DkoeXM7dgN5aPywVa8Oaz0vzCZ7w5zzNzU50GzO_gJdjiajPHmAVDuygloybiE3FCYNujYDXPICxDdTh0rs4ZxLWLVqsy3L7PfTtoXfL_9-5QMKrut-C2w0YkFBF1IDkxczDnFMBsPTX"
+  },
+  {
+    title: "Khu đô thị sinh thái Ecopark",
+    location: "Văn Giang, Hưng Yên",
+    area: "500 ha",
+    status: "Đang mở bán",
+    statusColor: "bg-emerald-600",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA9b2hFSFxaOuDlxVhafP7OzZUSTbxay9I4hadpxI_oHuHGJcdagL-ls1TQ57H7kADtmWdGELHQWeDxwJN0LEpJw2evOuCDRd1VyhAxpg0B3pZDd0SKPM4Z9a_72kjBO46KWmTzCh0ceySePMso8k_Gs3fxJy9TWc80-HIKCfNRugpvfUXiyTQM5TcdjVlHj-Q8GIuvoFEvAJvK6k5j44g-lRwsbnA2ILZutTVtyEtB67anekCfI14HlaogL0PbtR9mgdgf1dGYoTbY"
+  },
+];

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { Calendar, ArrowRight, ChevronRight, Clock } from 'lucide-react';
 
 const MOCK_NEWS_ARTICLES = [
   {
@@ -101,30 +102,26 @@ export default function NewsPage() {
                   
                   <div className="p-6">
                     <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-xs mb-3">
-                      <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">calendar_today</span>
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <Calendar className="size-3.5" />
                         {article.date}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">visibility</span>
-                        {article.views} lượt xem
                       </span>
                     </div>
                     
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors leading-snug">
                       {article.title}
                     </h2>
                     
-                    <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mb-4 leading-relaxed">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mb-4 leading-relaxed opacity-80">
                       {article.summary}
                     </p>
                     
-                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                      <span className="text-emerald-600 dark:text-emerald-400 text-sm font-semibold flex items-center gap-1">
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                      <span className="text-emerald-600 dark:text-emerald-400 text-sm font-bold flex items-center gap-1 group/link">
                         Đọc tiếp
-                        <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+                        <ArrowRight className="size-3.5 transition-transform group-hover/link:translate-x-1" />
                       </span>
-                      <span className="text-xs text-slate-400 italic">Bởi {article.author}</span>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">BY {article.author}</span>
                     </div>
                   </div>
                 </Link>
