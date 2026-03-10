@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import RichTextEditor from "../ui/TipTap";
-import { Camera, Plus, X, Check, Video } from "lucide-react";
+import { Camera, Check, Video } from "lucide-react";
 
 interface ListingFormProps {
   onSuccess?: () => void;
@@ -12,7 +12,6 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
   const [transactionType, setTransactionType] = useState<"mua-ban" | "cho-thue">("mua-ban");
   const [propertyType, setPropertyType] = useState("");
   const [selectedHashTags, setSelectedHashTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState("");
   const [description, setDescription] = useState("");
   
   const propertyTypes = [
@@ -39,14 +38,6 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
     "mat-pho", "chinh-chu", "nha-moi", "noi-that", "gia-tot", "can-ban-gap", "hem-xe-hoi", "no-hau"
   ];
 
-  const addTag = () => {
-    const tag = tagInput.trim().replace(/^#/, "");
-    if (tag && !selectedHashTags.includes(tag)) {
-      setSelectedHashTags([...selectedHashTags, tag]);
-    }
-    setTagInput("");
-  };
-
   const removeTag = (tag: string) => {
     setSelectedHashTags(selectedHashTags.filter(t => t !== tag));
   };
@@ -56,13 +47,6 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
       removeTag(tag);
     } else {
       setSelectedHashTags([...selectedHashTags, tag]);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addTag();
     }
   };
 
@@ -133,7 +117,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
                     : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 }`}
               >
-                Mua bán (#muaban)
+                Mua bán
               </button>
               <button
                 type="button"
@@ -144,7 +128,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
                     : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 }`}
               >
-                Cho thuê (#chotue)
+                Cho thuê
               </button>
             </div>
           </div>
@@ -160,9 +144,9 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
               required
               className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-slate-900 dark:text-white outline-none"
             >
-              <option value="">Chọn loại hình (Hashtag)</option>
+              <option value="">Chọn loại hình</option>
               {propertyTypes.map(type => (
-                <option key={type.id} value={type.id}>{type.label} (#{type.id})</option>
+                <option key={type.id} value={type.id}>{type.label}</option>
               ))}
             </select>
           </div>
@@ -277,7 +261,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Hashtags Đặc điểm (Multi-select)</label>
+          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Hashtags Đặc điểm (Chọn từ gợi ý)</label>
           
           {/* Preset Hashtag Chips */}
           <div className="flex flex-wrap gap-2 mb-4">
@@ -298,45 +282,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
             ))}
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-3">
-            {selectedHashTags.filter(t => !presetTags.includes(t)).map(tag => (
-              <span
-                key={tag}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200 dark:border-slate-700"
-              >
-                #{tag}
-                <button 
-                  type="button" 
-                  onClick={() => removeTag(tag)}
-                  className="hover:text-red-500 p-0.5"
-                >
-                  <X className="size-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">#</span>
-              <input 
-                type="text" 
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Nhập hashtag tự do..."
-                className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-7 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white outline-none"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={addTag}
-              className="px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2"
-            >
-              <Plus className="size-4" />
-              Thêm
-            </button>
-          </div>
+          {/* Manual input area removed per user request */}
         </div>
 
         <div className="space-y-2">
