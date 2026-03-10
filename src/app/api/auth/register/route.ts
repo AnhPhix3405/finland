@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
             phone,
             email,
             password,
-            slug,
             province,
             ward,
             referrer_phone
@@ -30,7 +29,6 @@ export async function POST(request: NextRequest) {
             where: {
                 OR: [
                     { phone: phone },
-                    ...(slug ? [{ slug: slug }] : []),
                     ...(email ? [{ email: email }] : [])
                 ]
             }
@@ -38,7 +36,6 @@ export async function POST(request: NextRequest) {
 
         if (existingBroker) {
             let errorMessage = 'Số điện thoại đã tồn tại';
-            if (existingBroker.slug === slug) errorMessage = 'Slug đã tồn tại';
             if (existingBroker.email === email) errorMessage = 'Email đã tồn tại';
             return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
         }
@@ -53,7 +50,6 @@ export async function POST(request: NextRequest) {
                 phone,
                 email,
                 password_hash,
-                slug: slug || phone, // Fallback slug nếu không có
                 province,
                 ward,
                 referrer_phone,
