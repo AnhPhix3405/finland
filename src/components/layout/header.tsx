@@ -10,6 +10,7 @@ export default function Header() {
     { href: "/", label: "Trang Chủ" },
     { href: "#", label: "Bản Đồ Quy Hoạch" },
     { href: "/du-an", label: "Dự Án" },
+    { href: "/tin-tuc", label: "Tin Tức" },
     { href: "/mua-ban", label: "Mua Bán" },
     { href: "/cho-thue", label: "Cho Thuê" },
     { href: "/moi-gioi", label: "Môi Giới" },

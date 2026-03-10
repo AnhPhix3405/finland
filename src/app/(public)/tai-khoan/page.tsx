@@ -55,7 +55,7 @@ export default function AccountPage() {
               <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">Thông tin cá nhân</h1>
               <p className="text-sm text-slate-500 mt-1">Quản lý thông tin hồ sơ của bạn để cá nhân hóa trải nghiệm.</p>
             </div>
-            
+
             <div className="p-6 md:p-8">
               <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 lg:mb-10">
                 <div className="relative shrink-0">
@@ -87,10 +87,10 @@ export default function AccountPage() {
                     <label htmlFor="fullName" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                       Họ và Tên <span className="text-red-500">*</span>
                     </label>
-                    <input 
+                    <input
                       id="fullName"
-                      type="text" 
-                      defaultValue="Long" 
+                      type="text"
+                      defaultValue="Long"
                       className="w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-800 text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500 transition-all text-sm h-10 px-3 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                     />
                   </div>
@@ -101,11 +101,11 @@ export default function AccountPage() {
                       Số điện thoại <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <input 
+                      <input
                         id="phoneNumber"
-                        type="tel" 
-                        defaultValue="0987 654 321" 
-                        readOnly 
+                        type="tel"
+                        defaultValue="0987 654 321"
+                        readOnly
                         className="w-full rounded-md bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 text-sm cursor-not-allowed pr-20 h-10 px-3 shadow-sm focus:outline-none"
                       />
                       <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider text-emerald-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-sm">
@@ -119,9 +119,9 @@ export default function AccountPage() {
                     <label htmlFor="emailAddress" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                       Email
                     </label>
-                    <input 
+                    <input
                       id="emailAddress"
-                      type="email" 
+                      type="email"
                       defaultValue="long@example.com"
                       className="w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-800 text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500 transition-all text-sm h-10 px-3 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                     />
@@ -132,7 +132,7 @@ export default function AccountPage() {
                     <label htmlFor="interestedArea" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                       Khu vực quan tâm
                     </label>
-                    <select 
+                    <select
                       id="interestedArea"
                       defaultValue="hn"
                       className="w-full rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-800 text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500 transition-all text-sm h-10 px-3 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
@@ -150,11 +150,11 @@ export default function AccountPage() {
                       <Bell className="size-4" /> Cài đặt thông báo
                     </h3>
                     <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-lg border border-slate-100 dark:border-slate-800">
-                      <input 
-                        id="emailNotifications" 
-                        type="checkbox" 
+                      <input
+                        id="emailNotifications"
+                        type="checkbox"
                         defaultChecked
-                        className="size-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600 dark:border-slate-600 dark:bg-slate-700" 
+                        className="size-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600 dark:border-slate-600 dark:bg-slate-700"
                       />
                       <label htmlFor="emailNotifications" className="text-sm text-slate-600 dark:text-slate-400 font-medium cursor-pointer select-none">
                         Nhận tin tức dự án mới, ưu đãi qua email
