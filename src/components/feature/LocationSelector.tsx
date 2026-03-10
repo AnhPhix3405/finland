@@ -47,8 +47,8 @@ export default function LocationSelector({
 
     return (
         <>
-            <div className="col-span-1">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectCity">
+            <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300" htmlFor="projectCity">
                     Tỉnh / Thành phố <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -57,7 +57,7 @@ export default function LocationSelector({
                         onProvinceChange(e.target.value);
                         onWardChange('');
                     }}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 transition-all text-slate-900 dark:text-white"
                     id="projectCity"
                 >
                     <option value="">Chọn Tỉnh / Thành phố</option>
@@ -67,18 +67,18 @@ export default function LocationSelector({
                 </select>
             </div>
 
-            <div className="col-span-1">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectDistrict">
+            <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300" htmlFor="projectDistrict">
                     Phường / Xã <span className="text-red-500">*</span>
                 </label>
                 <select
                     value={selectedWard}
                     onChange={(e) => onWardChange(e.target.value)}
                     disabled={!selectedProvince || wardsList.length === 0}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 transition-all text-slate-900 dark:text-white disabled:opacity-50"
                     id="projectDistrict"
                 >
-                    <option value="">Chọn Phường/Xã</option>
+                    <option value="">Chọn Phường / Xã</option>
                     {wardsList.map((ward, idx) => (
                         <option key={idx} value={ward.name}>{ward.name}</option>
                     ))}

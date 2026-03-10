@@ -6,6 +6,7 @@ import { Camera, Plus, X, Check, Video } from "lucide-react";
 import { createListing } from "@/src/app/modules/listings.service";
 import { uploadListingAttachments } from "@/src/app/modules/upload.service";
 import { useUserStore } from "@/src/store/userStore";
+import LocationSelector from "../feature/LocationSelector";
 
 interface ListingFormProps {
   onSuccess?: () => void;
@@ -228,33 +229,12 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
           Vị trí
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tỉnh/Thành <span className="text-red-500">*</span></label>
-            <select
-              required
-              value={province}
-              onChange={(e) => setProvince(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
-            >
-              <option value="">Chọn Tỉnh/Thành</option>
-              <option value="Ha Noi">Hà Nội</option>
-              <option value="Ho Chi Minh">TP. Hồ Chí Minh</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Quận/Huyện <span className="text-red-500">*</span></label>
-            <select
-              required
-              value={ward}
-              onChange={(e) => setWard(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
-            >
-              <option value="">Chọn Quận/Huyện</option>
-              <option value="District 1">Quận 1</option>
-              <option value="District 3">Quận 3</option>
-              <option value="Cau Giay">Cầu Giấy</option>
-            </select>
-          </div>
+          <LocationSelector
+            selectedProvince={province}
+            onProvinceChange={setProvince}
+            selectedWard={ward}
+            onWardChange={setWard}
+          />
           <div className="md:col-span-2 space-y-2">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Địa chỉ cụ thể</label>
             <input
