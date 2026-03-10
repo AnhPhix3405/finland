@@ -71,8 +71,8 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate ID generation: FIN + Year(25) + 6 digits
-    const randomId = `FIN25${Math.floor(100000 + Math.random() * 900000)}`;
+    // Simulate ID generation: FIN + Year(26) + 6 digits
+    const randomId = `FIN26${Math.floor(100000 + Math.random() * 900000)}`;
     setGeneratedId(randomId);
     setShowSuccess(true);
   };
