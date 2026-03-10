@@ -12,7 +12,7 @@ export interface CreateListingData {
   area?: number;
   width?: number;
   length?: number;
-  price?: bigint;
+  price?: string | number;
   direction?: string;
   visibility?: boolean;
   status?: string;
@@ -28,7 +28,7 @@ export interface ListingResponse {
 // Temporary method to create listing with UUID (không call API thật)
 export function createListingLocal(data: Partial<CreateListingData>): ListingResponse {
   const listingId = uuidv4();
-  
+
   // Validate required fields if needed
   if (!data.title || !data.description) {
     return {
@@ -37,10 +37,10 @@ export function createListingLocal(data: Partial<CreateListingData>): ListingRes
       error: "Title and description are required"
     };
   }
-  
+
   console.log("Created listing locally with ID:", listingId);
   console.log("Listing data:", data);
-  
+
   return {
     id: listingId,
     success: true,
@@ -59,7 +59,19 @@ export async function createListing(data: CreateListingData): Promise<ListingRes
     });
 
     const result = await response.json();
-    return result;
+    if (result.success) {
+      return {
+        id: result.data.id,
+        success: true,
+        message: result.message
+      };
+    } else {
+      return {
+        id: "",
+        success: false,
+        error: result.error || 'Failed to create listing'
+      };
+    }
   } catch (error) {
     console.error('Error creating listing:', error);
     return {

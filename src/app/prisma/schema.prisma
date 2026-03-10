@@ -99,7 +99,6 @@ model listings {
   length           Decimal? @db.Decimal(6, 2)
   price            BigInt?
   direction        String?  @db.VarChar(20)
-  visibility       Boolean? @default(true)
   status           String?
   brokers          brokers  @relation(fields: [broker_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_listings_broker")
 }

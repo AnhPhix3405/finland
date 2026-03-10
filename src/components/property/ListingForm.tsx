@@ -3,20 +3,22 @@
 import { useState, useRef } from "react";
 import RichTextEditor from "../ui/TipTap";
 import { Camera, Plus, X, Check, Video } from "lucide-react";
-import { createListingLocal } from "@/src/app/modules/listings.service";
+import { createListing } from "@/src/app/modules/listings.service";
 import { uploadListingAttachments } from "@/src/app/modules/upload.service";
+import { useUserStore } from "@/src/store/userStore";
 
 interface ListingFormProps {
   onSuccess?: () => void;
 }
 
 export function ListingForm({ onSuccess }: ListingFormProps) {
+  const { user } = useUserStore();
   const [transactionType, setTransactionType] = useState<"mua-ban" | "cho-thue">("mua-ban");
   const [propertyType, setPropertyType] = useState("");
   const [selectedHashTags, setSelectedHashTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [description, setDescription] = useState("");
-  
+
   // Form data states
   const [title, setTitle] = useState("");
   const [province, setProvince] = useState("");
@@ -27,12 +29,12 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
   const [width, setWidth] = useState("");
   const [length, setLength] = useState("");
   const [direction, setDirection] = useState("");
-  
+
   // File states
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const propertyTypes = [
     { id: "nha-pho", label: "Nhà phố" },
     { id: "chung-cu", label: "Chung cư" },
@@ -71,19 +73,19 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
       addTag();
     }
   };
-  
+
   // File handling functions
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     // Validate file types (only images)
     const validFiles = files.filter(file => file.type.startsWith('image/'));
     const invalidFiles = files.filter(file => !file.type.startsWith('image/'));
-    
+
     if (invalidFiles.length > 0) {
       alert(`${invalidFiles.length} file(s) bị loại bỏ vì không phải là ảnh`);
     }
-    
+
     // Check total file limit
     const newTotalFiles = selectedFiles.length + validFiles.length;
     if (newTotalFiles > 20) {
@@ -94,24 +96,30 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
     } else {
       setSelectedFiles(prev => [...prev, ...validFiles]);
     }
-    
+
     // Reset input
     if (e.target) {
       e.target.value = '';
     }
   };
-  
+
   const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!user) {
+      alert("Vui lòng đăng nhập để đăng bài");
+      return;
+    }
+
     setIsUploading(true);
-    
+
     try {
-      // Create listing locally first
-      const listingResult = createListingLocal({
+      // Create listing
+      const listingResult = await createListing({
         title,
         description,
         transaction_type: transactionType,
@@ -122,31 +130,31 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
         area: area ? parseFloat(area) : undefined,
         width: width ? parseFloat(width) : undefined,
         length: length ? parseFloat(length) : undefined,
-        price: price ? BigInt(price) : undefined,
+        price: price ? price.replace(/\D/g, '') : undefined,
         direction,
-        broker_id: "temp-broker-id" // TODO: Get from auth context
+        broker_id: user.id
       });
-      
+
       if (!listingResult.success) {
         alert(listingResult.error);
         return;
       }
-      
+
       console.log("Listing created with ID:", listingResult.id);
-      
+
       // Upload files if any
       if (selectedFiles.length > 0) {
-        const uploadPromises = selectedFiles.map(file => 
+        const uploadPromises = selectedFiles.map(file =>
           uploadListingAttachments(file, listingResult.id)
         );
-        
+
         const uploadResults = await Promise.all(uploadPromises);
         console.log("Upload results:", uploadResults);
       }
-      
+
       alert("Đăng bài thành công!");
       onSuccess?.();
-      
+
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("Có lỗi xảy ra khi đăng bài");
@@ -163,7 +171,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
           <span className="size-2 bg-emerald-600 rounded-full"></span>
           Thông tin cơ bản
         </h4>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
@@ -173,22 +181,20 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
               <button
                 type="button"
                 onClick={() => setTransactionType("mua-ban")}
-                className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${
-                  transactionType === "mua-ban" 
-                    ? "bg-white dark:bg-slate-700 text-emerald-600 shadow-sm" 
-                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                }`}
+                className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${transactionType === "mua-ban"
+                  ? "bg-white dark:bg-slate-700 text-emerald-600 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  }`}
               >
                 Mua bán
               </button>
               <button
                 type="button"
                 onClick={() => setTransactionType("cho-thue")}
-                className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${
-                  transactionType === "cho-thue" 
-                    ? "bg-white dark:bg-slate-700 text-emerald-600 shadow-sm" 
-                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                }`}
+                className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${transactionType === "cho-thue"
+                  ? "bg-white dark:bg-slate-700 text-emerald-600 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  }`}
               >
                 Cho thuê
               </button>
@@ -224,7 +230,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tỉnh/Thành <span className="text-red-500">*</span></label>
-            <select 
+            <select
               required
               value={province}
               onChange={(e) => setProvince(e.target.value)}
@@ -237,7 +243,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Quận/Huyện <span className="text-red-500">*</span></label>
-            <select 
+            <select
               required
               value={ward}
               onChange={(e) => setWard(e.target.value)}
@@ -251,8 +257,8 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
           </div>
           <div className="md:col-span-2 space-y-2">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Địa chỉ cụ thể</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Ví dụ: 123 Nguyễn Huệ, Phường Bến Nghé"
@@ -270,8 +276,8 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
         </h4>
         <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tiêu đề <span className="text-red-500">*</span></label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -282,12 +288,12 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Diện tích (m²) <span className="text-red-500">*</span></label>
-            <input 
-              type="number" 
-              required 
+            <input
+              type="number"
+              required
               value={area}
               onChange={(e) => setArea(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white" 
+              className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
             />
           </div>
           <div className="space-y-2">
@@ -295,37 +301,37 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
               {transactionType === "cho-thue" ? "Giá thuê/tháng" : "Tổng giá"} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <input 
-                type="text" 
-                required 
+              <input
+                type="text"
+                required
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white pr-16" 
+                className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white pr-16"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">VNĐ</span>
             </div>
           </div>
-          
+
           {showDimensions && (
             <>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Chiều ngang (m)</label>
-                <input 
-                  type="number" 
-                  step="0.1" 
+                <input
+                  type="number"
+                  step="0.1"
                   value={width}
                   onChange={(e) => setWidth(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white" 
+                  className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Chiều dài (m)</label>
-                <input 
-                  type="number" 
-                  step="0.1" 
+                <input
+                  type="number"
+                  step="0.1"
                   value={length}
                   onChange={(e) => setLength(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white" 
+                  className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
                 />
               </div>
             </>
@@ -347,7 +353,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Hướng cửa</label>
-            <select 
+            <select
               value={direction}
               onChange={(e) => setDirection(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
@@ -374,8 +380,8 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
                 className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-200 dark:border-emerald-800"
               >
                 #{tag}
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => removeTag(tag)}
                   className="hover:text-emerald-900 dark:hover:text-emerald-200 p-0.5"
                 >
@@ -387,8 +393,8 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
           <div className="flex gap-2">
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">#</span>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleKeyPress}
@@ -411,9 +417,9 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
         <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Mô tả chi tiết <span className="text-red-500">*</span></label>
           <div className="bg-slate-50 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
-            <RichTextEditor 
-              value={description} 
-              onChange={setDescription} 
+            <RichTextEditor
+              value={description}
+              onChange={setDescription}
               placeholder="Mô tả chi tiết về bất động sản, tiện ích xung quanh, pháp lý..."
             />
           </div>
@@ -439,7 +445,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
               Chọn ảnh
             </button>
           </div>
-          
+
           <input
             ref={fileInputRef}
             type="file"
@@ -448,7 +454,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
             onChange={handleFileSelect}
             className="hidden"
           />
-          
+
           {selectedFiles.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
               {selectedFiles.map((file, index) => (
@@ -470,9 +476,9 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
                   </div>
                 </div>
               ))}
-              
+
               {selectedFiles.length < 20 && (
-                <div 
+                <div
                   onClick={() => fileInputRef.current?.click()}
                   className="aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group"
                 >
@@ -484,9 +490,9 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
               )}
             </div>
           )}
-          
+
           {selectedFiles.length === 0 && (
-            <div 
+            <div
               onClick={() => fileInputRef.current?.click()}
               className="aspect-video rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group"
             >
