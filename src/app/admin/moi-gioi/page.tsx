@@ -87,9 +87,6 @@ export default function AdminBrokerList() {
       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{phone}</td>
       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{working_area ?? '—'}</td>
       <td className="px-6 py-4 text-right whitespace-nowrap">
-        <Link href={`/admin/moi-gioi/${slug ?? id}`} className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1" title="Chỉnh sửa">
-          <span className="material-symbols-outlined text-lg">edit</span>
-        </Link>
         <button className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 ml-1" title="Xóa">
           <span className="material-symbols-outlined text-lg">delete</span>
         </button>
@@ -111,10 +108,7 @@ export default function AdminBrokerList() {
               />
             </div>
           </div>
-          <Link href="/admin/moi-gioi/demo" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-sm text-sm font-medium flex items-center gap-2 transition-colors whitespace-nowrap">
-            <span className="material-symbols-outlined text-sm">add</span>
-            <span>Thêm môi giới</span>
-          </Link>
+
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
