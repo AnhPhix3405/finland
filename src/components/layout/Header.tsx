@@ -2,9 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Menu, X, LogIn, UserPlus } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Close menu on navigation
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
 
   const navLinks = [
     { href: "/", label: "Trang Chủ" },
@@ -56,12 +64,78 @@ export default function Header() {
             </Link>
           </div>
           <div className="flex items-center md:hidden">
-            <button className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 p-2" type="button">
-              <span className="material-symbols-outlined">menu</span>
+            <button 
+              onClick={() => setIsMenuOpen(true)}
+              className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 p-2" 
+              type="button"
+            >
+              <Menu className="size-6" />
             </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-[60] md:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
+            onClick={() => setIsMenuOpen(false)}
+          />
+          
+          {/* Drawer Content */}
+          <div className="absolute top-0 right-0 bottom-0 w-[280px] bg-white dark:bg-slate-900 shadow-xl flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="flex items-center justify-between p-4 border-b dark:border-slate-800">
+              <span className="font-bold text-emerald-700">finland.vn</span>
+              <button 
+                onClick={() => setIsMenuOpen(false)}
+                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+              >
+                <X className="size-6 text-slate-500" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto py-4">
+              <nav className="flex flex-col">
+                {navLinks.map((link, index) => {
+                  const isActive = link.href === "/" ? pathname === "/" : pathname?.startsWith(link.href) && link.href !== "#";
+                  return (
+                    <Link 
+                      key={index} 
+                      href={link.href}
+                      className={`px-6 py-4 text-sm font-semibold transition-colors ${
+                        isActive 
+                          ? "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20" 
+                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            <div className="p-6 border-t dark:border-slate-800 space-y-3">
+              <Link 
+                href="/dang-nhap"
+                className="flex items-center justify-center gap-2 w-full py-3 text-sm font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-lg"
+              >
+                <LogIn className="size-4" />
+                Đăng nhập
+              </Link>
+              <Link 
+                href="/dang-ky"
+                className="flex items-center justify-center gap-2 w-full py-3 text-sm font-bold text-white bg-emerald-600 rounded-lg text-center"
+              >
+                <UserPlus className="size-4" />
+                Đăng ký
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
