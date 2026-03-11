@@ -82,15 +82,15 @@ export interface UpdateListingStatusResponse {
 }
 
 /**
- * Get all listings with pagination
+ * Get all listings with pagination (admin endpoint - shows all statuses)
  */
-export async function getListings(page: number = 1, limit: number = 20): Promise<ListingListResponse> {
+export async function getListings(page: number = 1, limit: number = 50): Promise<ListingListResponse> {
   try {
-    const response = await fetch(`/api/listings?page=${page}&limit=${limit}`);
+    const response = await fetch(`/api/admin/listings?page=${page}&limit=${limit}`);
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error('Error fetching listings:', error);
+    console.error('Error fetching admin listings:', error);
     return {
       success: false,
       error: 'Failed to fetch listings'
@@ -106,12 +106,12 @@ export async function updateListingStatus(
   status: ListingStatus
 ): Promise<UpdateListingStatusResponse> {
   try {
-    const response = await fetch(`/api/listings/${listingId}/status`, {
-      method: 'PATCH',
+    const response = await fetch(`/api/admin/listings`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ id: listingId, status }),
     });
 
     return await response.json();
@@ -129,7 +129,7 @@ export async function updateListingStatus(
  */
 export async function deleteListing(listingId: string): Promise<UpdateListingStatusResponse> {
   try {
-    const response = await fetch(`/api/listings/${listingId}`, {
+    const response = await fetch(`/api/admin/listings?id=${listingId}`, {
       method: 'DELETE',
     });
 

@@ -1,4 +1,5 @@
 import { MapPin, Heart } from "lucide-react";
+import Link from "next/link";
 
 export interface PropertyCardProps {
   id: string;
@@ -9,6 +10,7 @@ export interface PropertyCardProps {
   location: string;
   tags: string[];
   isPriority?: boolean;
+  slug?: string | null;
 }
 
 export function PropertyCard({
@@ -20,7 +22,11 @@ export function PropertyCard({
   location,
   tags,
   isPriority = false,
+  slug,
 }: PropertyCardProps) {
+  // Use slug for URL, fallback to id if no slug
+  const detailUrl = slug ? `/mua-ban/${slug}` : `/mua-ban/${id}`;
+
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden rounded-sm hover:shadow-lg transition-shadow flex flex-col h-full">
       <div className="relative aspect-video">
@@ -49,9 +55,11 @@ export function PropertyCard({
             • {area}
           </span>
         </div>
-        <h3 className="text-base font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug mb-2 hover:text-emerald-600 cursor-pointer transition-colors">
-          {title}
-        </h3>
+        <Link href={detailUrl}>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug mb-2 hover:text-emerald-600 cursor-pointer transition-colors">
+            {title}
+          </h3>
+        </Link>
         <div className="flex items-center text-slate-500 dark:text-slate-400 text-xs mb-3">
           <MapPin className="w-4 h-4 mr-1" aria-hidden="true" />
           {location}
@@ -66,9 +74,12 @@ export function PropertyCard({
             </span>
           ))}
         </div>
-        <button className="w-full mt-auto py-2 border border-slate-300 dark:border-slate-600 text-sm font-semibold hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 dark:hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-colors rounded-sm uppercase tracking-tight">
+        <Link 
+          href={detailUrl}
+          className="w-full mt-auto py-2 border border-slate-300 dark:border-slate-600 text-sm font-semibold hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 dark:hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-colors rounded-sm uppercase tracking-tight text-center block"
+        >
           Xem chi tiết
-        </button>
+        </Link>
       </div>
     </div>
   );

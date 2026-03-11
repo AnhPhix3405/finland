@@ -4,6 +4,7 @@ import { Tag } from './tags.service.client';
 export interface CreateListingData {
   broker_id: string;
   title: string;
+  slug?: string; // Add slug field
   description: string;
   transaction_type_id?: string; // Changed from transaction_type to transaction_type_id  
   property_type_id?: string; // Changed from property_type to property_type_id
@@ -86,13 +87,51 @@ export async function createListing(data: CreateListingData): Promise<ListingRes
   }
 }
 
-export async function getListings(): Promise<any[]> {
+export async function getListings(params?: {
+  page?: number;
+  limit?: number;
+  hashtags?: string[];
+}): Promise<{data: any[], pagination: any}> {
   try {
-    const response = await fetch('/api/listings');
+    const { page = 1, limit = 10, hashtags } = params || {};
+    
+    // Build URL with query parameters
+    const searchParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    });
+    
+    if (hashtags && hashtags.length > 0) {
+      searchParams.set('hashtags', hashtags.join(','));
+    }
+    
+    const response = await fetch(`/api/listings?${searchParams.toString()}`);
     const result = await response.json();
-    return result.data || [];
+    
+    return {
+      data: result.data || [],
+      pagination: result.pagination || {}
+    };
   } catch (error) {
     console.error('Error fetching listings:', error);
-    return [];
+    return {
+      data: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0
+      }
+    };
   }
+}
+
+export async function getListingsByHashtags(hashtags: string[], params?: {
+  page?: number;
+  limit?: number;
+}): Promise<{data: any[], pagination: any}> {
+  return getListings({
+    ...params,
+    hashtags
+  });
 }

@@ -1,65 +1,99 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { PropertyCard } from "../../../components/property/PropertyCard";
-import { PropertyFilter } from "../../../components/property/PropertyFilter";
+import { PropertyFilter, FilterState } from "../../../components/property/PropertyFilter";
 import { Pagination } from "../../../components/shared/Pagination";
+import { getListingsByHashtags } from "../../modules/listings.service";
 
 export default function MuaBanPage() {
-  const properties = [
-    {
-      id: "1",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAH-qH24_KE8TIFtAOlg2VMxFw51PbmagHsDz-fp6Y_o13wCplh0YpY5tUVGtFy_1YJB66cE-ffhS1bk0Khp5Id5HsZm2Vn7isAq4e3dgAm2smw-oxIc6ZJMRAczbqKi_kj0UIofIfDnHxU34GvPlK-Og0xGinm9wGIfWLsRQ9fqzoYOYfmBA-cQ32_dFeyQ0cYN5hgai2CsH15n0rd3N0dVC5HbLBDzPaUbpyyq_mUnWXQDljSIAPURnziqfdaHPhnGT183UxhHGub",
-      price: "5.2 Tỷ",
-      area: "80 m²",
-      title: "Bán gấp nhà phố mặt tiền kinh doanh, sổ hồng chính chủ tại trung tâm Quận 10",
-      location: "Quận 10, TP.HCM",
-      tags: ["mặt-phố", "chính-chủ", "nở-hậu"],
-      isPriority: true,
-    },
-    {
-      id: "2",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBHEygKj-4u02EaJd0shuTZJy2lVoUGpcNJwArji3ty1dg7HFVvYACu6NYOaGRwsTDsha5l-sKncleTC-oiYq0_gnTGLjA4v5A-v67gKoZFKTjvahIhf-nqBYJL685ahS1AFJVxazKI1Lc5HwDovTWsoA-r8I3YhniG8ufBDFLSbSnzu8MS0iWXbDPRsiB68x_d36LRZ8eA2ur4daLkNeM_MYpYuSI1yoMIeeSTXqX-IaSp949bpmaWOiJK9uqXCM695EtGVGjblaj9",
-      price: "3.5 Tỷ",
-      area: "65 m²",
-      title: "Căn hộ 2PN full nội thất, view Landmark 81 cực đẹp, tầng cao thoáng mát",
-      location: "Bình Thạnh, TP.HCM",
-      tags: ["view-đẹp", "full-nội-thất"],
-    },
-    {
-      id: "3",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDKT20xNFPkK05zwidG5gIm_MLmWHPATsYLMlK6c1DLvtXiMVcy1hKQ8NNjgJgNhO46fQfp53Umbcfic_Bxg25Mu295ktjujSjdxWggq7Is8gc2prO3uEDu181_87VZ9XwgEPZNJ4P1nVFUqWxjrBaerQldfwKUdvawN-1uNuOyrF_PMWKpH8HUxYeyLx2XcQHUEx9CcAlVzec6BvqnULpwq-CozLCoDUI-W8zds7tJYSlKRjAlk9eV8Cm9OQaSuqKXgE3mRgxdv3uO",
-      price: "15 Tỷ",
-      area: "200 m²",
-      title: "Biệt thự đơn lập khu đô thị mới, đầy đủ tiện ích cao cấp, an ninh 24/7",
-      location: "Quận 2, TP.HCM",
-      tags: ["biệt-thự", "cao-cấp", "giá-tốt"],
-    },
-    {
-      id: "4",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDz0njNhJ8bDgswxZuD_FfSmmMxHRNBPAhcPOhylwZbMbiKoySFTTZOVVdGanmDgqW1c8B61uEtLCDy-breOBFLvAWnuPyDEtQeM-eD0Hg6FxUGBjjbWq9okD7ZRFq7wBLPwhMByLHbCd9aQACm2KlWZRdqUISoKDaInZRrVEoVl3OgWYlEj_Wi3cbJmnj1FxhtmhLjHuxHUDvysUDhbKmpujzwe_vl-jpfE6SV1Dl1caX3y4jOiWtEIgRbZftyusZz-tLBH_o72RA5",
-      price: "2.1 Tỷ",
-      area: "100 m²",
-      title: "Lô đất vuông vức, đường nhựa 8m, kinh doanh ngay, dân cư đông đúc",
-      location: "Bình Chánh, TP.HCM",
-      tags: ["đất-nền", "đầu-tư"],
-    },
-    {
-      id: "5",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAQL0HMevDE7EqzQydhZ-A_ZzNsJtx4fRjsMgu5H6QZh6miSHCjRYe907Q5apMQwr4YGxU2H101RZUlVbzO65L3pQ8GxZpeOgvLskfU_u7IM3PTtQOnhzBD4kbGy-LBHdmMaQe7r-tJWfXmaG25PkTQ8A0-nOuWHeJiE5bqqjtU7iKzTHSJolP1TQXyT3eulSiKDG-gtSbxl7EkzDDk06s73yxJvtwxUAzUvARy5uorVSuUtTK5CBwHz6Kr-x-nxAzONnKsk55blPPw",
-      price: "4.8 Tỷ",
-      area: "75 m²",
-      title: "Nhà 1 trệt 2 lầu mới xây, hẻm xe hơi thông thoáng, gần chợ và trường học",
-      location: "Gò Vấp, TP.HCM",
-      tags: ["nhà-mới", "hẻm-xe-hơi"],
-    },
-    {
-      id: "6",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuC_JAgSZKfJpmCwDoNBESbOOJbTEoEgFd6MbnZOPY5JFxpGR6Uf37N8_iMejsXeAzZhUoGoyyNixZsaYaeY7-YJ3aLtKqmzmAW6kQ972GtzdK9wRrcpM01j7LT3Z9qCXNjwhnpz7uZCXBwAin_GHae1dFllDA-dXGr-q6f_tO9pQ1Ys-HJlnIsK-aSdOD1-11gvvHTbod2Wvv8iX61OO6ad1-v60Bi13vl7EkPwnQkrn2ziT0WEO2YodAx4Cmzy1oxrQj4OMgLXgYfd",
-      price: "2.9 Tỷ",
-      area: "45 m²",
-      title: "Căn hộ studio đang cho thuê ổn định, ngay trung tâm tài chính Quận 1",
-      location: "Quận 1, TP.HCM",
-      tags: ["trung-tâm", "thu-nhập-ổn-định"],
-    },
-  ];
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentFilters, setCurrentFilters] = useState<FilterState>({});
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 12,
+    total: 0,
+    totalPages: 0
+  });
+
+  const buildHashtags = (filters: FilterState) => {
+    const hashtags = ['muaban']; // Always include base hashtag
+    
+    // Add property type hashtag if selected
+    if (filters.propertyType && filters.propertyType !== '') {
+      hashtags.push(filters.propertyType);
+    }
+    
+    return hashtags;
+  };
+
+  const formatPrice = (price: string | number) => {
+    if (!price) return "Thỏa thuận";
+    const numPrice = Number(price);
+    
+    if (numPrice >= 1000000000) {
+      const billions = numPrice / 1000000000;
+      return `${billions.toFixed(1)} Tỷ`;
+    } else if (numPrice >= 1000000) {
+      const millions = numPrice / 1000000;
+      return `${millions.toFixed(0)} Triệu`;
+    } else if (numPrice >= 1000) {
+      const thousands = numPrice / 1000;
+      return `${thousands.toFixed(0)} Nghìn`;
+    } else {
+      return `${numPrice.toLocaleString('vi-VN')} VND`;
+    }
+  };
+
+  const loadListings = async (filters: FilterState, page: number = 1) => {
+    try {
+      setLoading(true);
+      const hashtags = buildHashtags(filters);
+      const result = await getListingsByHashtags(hashtags, {
+        page,
+        limit: pagination.limit
+      });
+      
+      // Map API data to component expected format
+      const mappedProperties = result.data.map((listing: any) => ({
+        id: listing.id,
+        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAH-qH24_KE8TIFtAOlg2VMxFw51PbmagHsDz-fp6Y_o13wCplh0YpY5tUVGtFy_1YJB66cE-ffhS1bk0Khp5Id5HsZm2Vn7isAq4e3dgAm2smw-oxIc6ZJMRAczbqKi_kj0UIofIfDnHxU34GvPlK-Og0xGinm9wGIfWLsRQ9fqzoYOYfmBA-cQ32_dFeyQ0cYN5hgai2CsH15n0rd3N0dVC5HbLBDzPaUbpyyq_mUnWXQDljSIAPURnziqfdaHPhnGT183UxhHGub", // Default image for now
+        price: listing.price ? formatPrice(listing.price) : "Thỏa thuận",
+        area: listing.area ? `${listing.area} m²` : "N/A",
+        title: listing.title,
+        location: `${listing.ward}, ${listing.province}`,
+        tags: listing.tags?.map((tag: any) => tag.slug) || [],
+        isPriority: false, // Can add logic later
+        slug: listing.slug,
+        broker: listing.brokers
+      }));
+      
+      setProperties(mappedProperties);
+      setPagination({...result.pagination});
+    } catch (error) {
+      console.error('Error loading listings:', error);
+      setProperties([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load initial listings with "muaban" hashtag
+  useEffect(() => {
+    const initialFilters = {};
+    setCurrentFilters(initialFilters);
+    loadListings(initialFilters);
+  }, []);
+
+  const handleFilterChange = (filters: FilterState) => {
+    setCurrentFilters(filters);
+    loadListings(filters, 1); // Reset to page 1 when filtering
+  };
+
+  const handlePageChange = (page: number) => {
+    loadListings(currentFilters, page);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -73,16 +107,42 @@ export default function MuaBanPage() {
         </p>
       </div>
 
-      <PropertyFilter />
+      <PropertyFilter onFilterChange={handleFilterChange} />
+
+      {/* Loading State */}
+      {loading && (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+          <span className="ml-3 text-slate-600 dark:text-slate-400">Đang tải...</span>
+        </div>
+      )}
 
       {/* Property Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {properties.map((property) => (
-          <PropertyCard key={property.id} {...property} />
-        ))}
-      </div>
-
-      <Pagination />
+      {!loading && (
+        <>
+          {properties.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {properties.map((property) => (
+                <PropertyCard key={property.id} {...property} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-slate-500 dark:text-slate-400">
+                Không tìm thấy bất động sản nào phù hợp với tiêu chí lọc.
+              </p>
+            </div>
+          )}
+          
+          {properties.length > 0 && (
+            <Pagination 
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }

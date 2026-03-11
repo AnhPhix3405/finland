@@ -105,6 +105,7 @@ model listings {
   status              String?
   property_type_id    String?            @db.Uuid
   transaction_type_id String?            @db.Uuid
+  slug                String?
   brokers             brokers            @relation(fields: [broker_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_listings_broker")
   property_types      property_types?    @relation(fields: [property_type_id], references: [id], onUpdate: NoAction, map: "fk_listings_property_type")
   transaction_types   transaction_types? @relation(fields: [transaction_type_id], references: [id], onUpdate: NoAction, map: "fk_listings_transaction_type")
