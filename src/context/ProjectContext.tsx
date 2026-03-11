@@ -4,19 +4,26 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface ProjectContextType {
     activeProjectId: string | null;
     setActiveProjectId: (id: string | null) => void;
+    projectSlug: string | null;
+    setProjectSlug: (slug: string | null) => void;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export function ProjectProvider({ children }: { children: ReactNode }) {
     const [activeProjectId, setActiveProjectIdState] = useState<string | null>(null);
+    const [projectSlug, setProjectSlugState] = useState<string | null>(null);
 
     // Initialize from sessionStorage to survive page refreshes
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const stored = sessionStorage.getItem('activeProjectId');
-            if (stored) {
-                setActiveProjectIdState(stored);
+            const storedId = sessionStorage.getItem('activeProjectId');
+            const storedSlug = sessionStorage.getItem('projectSlug');
+            if (storedId) {
+                setActiveProjectIdState(storedId);
+            }
+            if (storedSlug) {
+                setProjectSlugState(storedSlug);
             }
         }
     }, []);
@@ -32,8 +39,24 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const setProjectSlug = (slug: string | null) => {
+        setProjectSlugState(slug);
+        if (typeof window !== 'undefined') {
+            if (slug) {
+                sessionStorage.setItem('projectSlug', slug);
+            } else {
+                sessionStorage.removeItem('projectSlug');
+            }
+        }
+    };
+
     return (
-        <ProjectContext.Provider value={{ activeProjectId, setActiveProjectId }}>
+        <ProjectContext.Provider value={{ 
+            activeProjectId, 
+            setActiveProjectId, 
+            projectSlug, 
+            setProjectSlug 
+        }}>
             {children}
         </ProjectContext.Provider>
     );

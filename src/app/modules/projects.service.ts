@@ -63,3 +63,14 @@ export const getProjects = async (params?: { page?: number; limit?: number; stat
     });
     return response.json();
 };
+
+export const getProject = async (slug: string) => {
+    try {
+        const response = await fetch(`/api/projects/${slug}`);
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Frontend get project error:', error);
+        return { success: false, error: 'Không thể kết nối đến máy chủ' };
+    }
+};

@@ -40,7 +40,10 @@ export async function GET(request: NextRequest) {
       where,
       skip,
       take: limit,
-      orderBy: {}
+      orderBy: [
+        { created_at: 'desc' },
+        { name: 'asc' }
+      ]
     });
 
     return NextResponse.json({
@@ -120,10 +123,10 @@ export async function POST(request: NextRequest) {
         contact_name,
         contact_phone,
         content,
-        status,
-        area_min: area_min ? parseInt(area_min) : null,
-        area_max: area_max ? parseInt(area_max) : null,
-        price: price ? parseFloat(price) : 0,
+        status: status || 'sắp mở bán',
+        area_min: area_min ? parseInt(area_min.toString()) : null,
+        area_max: area_max ? parseInt(area_max.toString()) : null,
+        price: price ? parseFloat(price.toString()) : 0,
         project_type: project_type || 'Căn hộ',
         province,
         ward
