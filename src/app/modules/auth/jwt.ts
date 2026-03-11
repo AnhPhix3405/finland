@@ -27,3 +27,20 @@ export async function verifyToken(token: string) {
         return null;
     }
 }
+
+// Admin-specific JWT functions with shorter expiration times
+export async function signAdminAccessToken(payload: any) {
+    return await new SignJWT({ ...payload, role: 'admin' })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime("15m") // Admin access token valid for 15 minutes
+        .sign(secret);
+}
+
+export async function signAdminRefreshToken(payload: any) {
+    return await new SignJWT({ ...payload, role: 'admin' })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime("30d") // Admin refresh token valid for 30 days
+        .sign(secret);
+}
