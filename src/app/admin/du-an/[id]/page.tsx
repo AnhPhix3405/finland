@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { uploadProjectFile, deleteAttachment } from "@/src/app/modules/upload.service";
 import { getProjects, updateProject } from "@/src/app/modules/projects.service";
+import { getPropertyTypes, PropertyType } from "@/src/app/modules/property.service";
 import { useProjectContext } from "@/src/context/ProjectContext";
 import RichTextEditor from "@/src/components/ui/RichTextEditor";
 import LocationSelector from "@/src/components/feature/LocationSelector";
@@ -32,12 +33,32 @@ export default function AdminProjectDetail() {
   const [projectAreaMin, setProjectAreaMin] = useState<string>('');
   const [projectAreaMax, setProjectAreaMax] = useState<string>('');
   const [projectPrice, setProjectPrice] = useState<string>('');
-  const [projectType, setProjectType] = useState<string>('');
+  const [selectedPropertyTypeId, setSelectedPropertyTypeId] = useState<string>('');
+  const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
+  const [loadingPropertyTypes, setLoadingPropertyTypes] = useState(false);
 
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('');
 
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  
+  useEffect(() => {
+    const fetchPropertyTypes = async () => {
+      setLoadingPropertyTypes(true);
+      try {
+        const result = await getPropertyTypes({ limit: 100 });
+        if (result.success) {
+          setPropertyTypes(result.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching property types:', error);
+      } finally {
+        setLoadingPropertyTypes(false);
+      }
+    };
+    fetchPropertyTypes();
+  }, []);
+
   useEffect(() => {
     if (toast) {
       const t = setTimeout(() => setToast(null), 3000);
@@ -74,7 +95,7 @@ export default function AdminProjectDetail() {
           setProjectAreaMin(p.area_min?.toString() || '');
           setProjectAreaMax(p.area_max?.toString() || '');
           setProjectPrice(p.price ? Number(p.price).toLocaleString('en-US') : '');
-          setProjectType(p.project_type || '');
+          setSelectedPropertyTypeId(p.property_type_id || '');
           setSelectedProvince(p.province || '');
           setSelectedDistrict(p.ward || '');
           setDescription(p.content || '');
@@ -153,7 +174,7 @@ export default function AdminProjectDetail() {
         area_min: projectAreaMin ? Number(projectAreaMin) : undefined,
         area_max: projectAreaMax ? Number(projectAreaMax) : undefined,
         price: projectPrice ? Number(projectPrice.replace(/,/g, '')) : undefined,
-        project_type: projectType,
+        property_type_id: selectedPropertyTypeId || undefined,
         content: description,
       });
 
@@ -203,15 +224,24 @@ export default function AdminProjectDetail() {
                 <input value={projectName} onChange={(e) => setProjectName(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white placeholder-slate-400" id="projectName" placeholder="Nhập tên dự án..." type="text" />
               </div>
               <div className="col-span-1">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectType">Loại hình <span className="text-red-500">*</span></label>
-                <select value={projectType} onChange={(e) => setProjectType(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700" id="projectType">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="propertyType">Loại hình <span className="text-red-500">*</span></label>
+                <select 
+                  value={selectedPropertyTypeId} 
+                  onChange={(e) => setSelectedPropertyTypeId(e.target.value)} 
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-sm focus:ring-primary focus:border-primary dark:text-white text-slate-700" 
+                  id="propertyType"
+                  disabled={loadingPropertyTypes}
+                >
                   <option value="">Chọn loại hình</option>
-                  <option value="Căn hộ">Căn hộ</option>
-                  <option value="Đất nền">Đất nền</option>
-                  <option value="Biệt thự">Biệt thự</option>
-                  <option value="Nhà phố">Nhà phố</option>
-                  <option value="Shophouse">Shophouse</option>
+                  {propertyTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name}
+                    </option>
+                  ))}
                 </select>
+                {loadingPropertyTypes && (
+                  <p className="text-xs text-slate-500 mt-1">Đang tải loại hình...</p>
+                )}
               </div>
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" htmlFor="projectPrice">Giá (VND)</label>

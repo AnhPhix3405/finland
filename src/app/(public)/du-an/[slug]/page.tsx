@@ -16,7 +16,11 @@ interface Project {
   province?: string;
   ward?: string;
   developer?: string;
-  project_type?: string;
+  property_type_id?: string;
+  property_types?: {
+    id: string;
+    name: string;
+  };
   status?: string;
   area_min?: number;
   area_max?: number;
@@ -299,12 +303,12 @@ export default function ProjectDetail() {
                 <span className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Diện tích</span>
                 <span className="text-xl font-semibold text-slate-900 dark:text-white">{formatArea(project.area_min, project.area_max)}</span>
               </div>
-              {project.project_type && (
+              {project.property_types && (
                 <>
                   <div className="w-px h-10 bg-gray-200 dark:bg-slate-700 hidden sm:block"></div>
                   <div>
                     <span className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Loại hình</span>
-                    <span className="text-lg font-medium text-slate-900 dark:text-white">{project.project_type}</span>
+                    <span className="text-lg font-medium text-slate-900 dark:text-white">{project.property_types.name}</span>
                   </div>
                 </>
               )}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { processTagsForListing } from '@/src/app/modules/tags.service.server';
 
 // Helper function to handle BigInt serialization
 function serializeData(data: any) {
@@ -27,6 +28,13 @@ export async function GET(request: NextRequest) {
             phone: true,
             email: true,
             avatar_url: true
+          }
+        },
+        tags: {
+          select: {
+            id: true,
+            name: true,
+            slug: true
           }
         }
       },
@@ -62,7 +70,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    const requiredFields = ['broker_id', 'title', 'description', 'transaction_type', 'property_type', 'province', 'ward'];
+    const requiredFields = ['broker_id', 'title', 'description', 'province', 'ward'];
     const missingFields = requiredFields.filter(field => !body[field]);
 
     if (missingFields.length > 0) {
@@ -77,9 +85,9 @@ export async function POST(request: NextRequest) {
 
     // Extract valid fields
     const {
-      broker_id, title, description, transaction_type,
-      property_type, province, ward, address,
-      area, width, length, price, direction
+      broker_id, title, description, transaction_type_id,
+      property_type_id, province, ward, address,
+      area, width, length, price, direction, tags
     } = body;
 
     // Convert price to BigInt if provided and not empty
@@ -97,8 +105,8 @@ export async function POST(request: NextRequest) {
         broker_id,
         title,
         description,
-        transaction_type,
-        property_type,
+        transaction_type_id,
+        property_type_id,
         province,
         ward,
         address,
@@ -122,9 +130,22 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Process tags if provided
+    let processedTags = [];
+    if (tags && Array.isArray(tags) && tags.length > 0) {
+      try {
+        processedTags = await processTagsForListing(tags, listing.id);
+        console.log(`Created/found ${processedTags.length} tags for listing ${listing.id}`);
+      } catch (tagError) {
+        console.error('Error processing tags:', tagError);
+        // Don't fail the entire operation if tags fail
+      }
+    }
+
     return NextResponse.json(serializeData({
       success: true,
       data: listing,
+      tags: processedTags,
       message: 'Listing created successfully'
     }));
 

@@ -1,11 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
+import { Tag } from './tags.service.client';
 
 export interface CreateListingData {
   broker_id: string;
   title: string;
   description: string;
-  transaction_type: string;
-  property_type: string;
+  transaction_type_id?: string; // Changed from transaction_type to transaction_type_id  
+  property_type_id?: string; // Changed from property_type to property_type_id
   province: string;
   ward: string;
   address?: string;
@@ -16,6 +17,7 @@ export interface CreateListingData {
   direction?: string;
   visibility?: boolean;
   status?: string;
+  tags?: string[]; // Array of tag names
 }
 
 export interface ListingResponse {
@@ -23,6 +25,7 @@ export interface ListingResponse {
   success: boolean;
   message?: string;
   error?: string;
+  tags?: Tag[]; // Include processed tags in response
 }
 
 // Temporary method to create listing with UUID (không call API thật)
@@ -63,7 +66,8 @@ export async function createListing(data: CreateListingData): Promise<ListingRes
       return {
         id: result.data.id,
         success: true,
-        message: result.message
+        message: result.message,
+        tags: result.tags || [] // Include tags in response
       };
     } else {
       return {

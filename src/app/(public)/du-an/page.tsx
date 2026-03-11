@@ -15,7 +15,11 @@ interface Project {
   province?: string;
   ward?: string;
   developer?: string;
-  project_type?: string;
+  property_type_id?: string;
+  property_types?: {
+    id: string;
+    name: string;
+  };
   status?: string;
   area_min?: number;
   area_max?: number;
@@ -187,9 +191,9 @@ export default function ProjectList() {
                   <span className="text-xs font-medium text-gray-500 dark:text-slate-400">
                     {formatArea(project.area_min, project.area_max)}
                   </span>
-                  {project.project_type && (
+                  {project.property_types && (
                     <span className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded">
-                      {project.project_type}
+                      {project.property_types.name}
                     </span>
                   )}
                 </div>

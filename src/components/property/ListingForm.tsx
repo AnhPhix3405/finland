@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import RichTextEditor from "../ui/TipTap";
 import { Camera, Plus, X, Check, Video } from "lucide-react";
 import { createListing } from "@/src/app/modules/listings.service";
 import { uploadListingAttachments } from "@/src/app/modules/upload.service";
+import { getAllTagNamesAPI } from "@/src/app/modules/tags.service.client";
 import { useUserStore } from "@/src/store/userStore";
 import LocationSelector from "../feature/LocationSelector";
+import { loadAllFormOptions, SelectOption } from "@/src/app/modules/form-options.service";
 
 interface ListingFormProps {
   onSuccess?: () => void;
@@ -14,11 +16,38 @@ interface ListingFormProps {
 
 export function ListingForm({ onSuccess }: ListingFormProps) {
   const { user } = useUserStore();
-  const [transactionType, setTransactionType] = useState<"mua-ban" | "cho-thue">("mua-ban");
-  const [propertyType, setPropertyType] = useState("");
+  const [transactionTypeId, setTransactionTypeId] = useState("");
+  const [propertyTypeId, setPropertyTypeId] = useState("");
   const [selectedHashTags, setSelectedHashTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [description, setDescription] = useState("");
+  
+  // Options loaded from API
+  const [propertyTypes, setPropertyTypes] = useState<SelectOption[]>([]);
+  const [transactionTypes, setTransactionTypes] = useState<SelectOption[]>([]);
+  const [optionsLoading, setOptionsLoading] = useState(true);
+  
+  // Load options on component mount
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        const options = await loadAllFormOptions();
+        setPropertyTypes(options.propertyTypes);
+        setTransactionTypes(options.transactionTypes);
+        
+        // Load tag suggestions
+        const allTagNames = await getAllTagNamesAPI();
+        setTagSuggestions(allTagNames);
+      } catch (error) {
+        console.error('Error loading form options:', error);
+      } finally {
+        setOptionsLoading(false);
+      }
+    };
+    loadOptions();
+  }, []);
 
   // Form data states
   const [title, setTitle] = useState("");
@@ -36,42 +65,81 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const propertyTypes = [
-    { id: "nha-pho", label: "Nhà phố" },
-    { id: "chung-cu", label: "Chung cư" },
-    { id: "dat-nen", label: "Đất nền" },
-    { id: "biet-thu", label: "Biệt thự" },
-    { id: "kho-xuong", label: "Kho xưởng" },
-    { id: "van-phong", label: "Văn phòng" },
-    { id: "nha-tro", label: "Nhà trọ" },
-    { id: "shophouse", label: "Shophouse" },
-  ];
-
-  const isApartment = propertyType === "chung-cu";
-  const isLand = propertyType === "dat-nen";
-  const isHouse = ["nha-pho", "biet-thu", "shophouse", "nha-tro"].includes(propertyType);
-  const isOffice = ["van-phong", "kho-xuong"].includes(propertyType);
+  // Derive property type for conditional rendering
+  const selectedPropertyType = propertyTypes.find(pt => pt.id === propertyTypeId);
+  const selectedTransactionType = transactionTypes.find(tt => tt.id === transactionTypeId);
+  
+  const isApartment = selectedPropertyType?.hashtag === "chung-cu";
+  const isLand = selectedPropertyType?.hashtag === "dat-nen";
+  const isHouse = ["nha-pho", "biet-thu", "shophouse", "nha-tro"].includes(selectedPropertyType?.hashtag || "");
+  const isOffice = ["van-phong", "kho-xuong"].includes(selectedPropertyType?.hashtag || "");
 
   const showBedrooms = isHouse || isApartment;
   const showFloors = isHouse || isOffice;
   const showDimensions = !isApartment;
 
-  const addTag = () => {
-    const tag = tagInput.trim().replace(/^#/, "");
+  const addTag = (tagToAdd?: string) => {
+    const tag = (tagToAdd || tagInput).trim().replace(/^#/, "");
     if (tag && !selectedHashTags.includes(tag)) {
       setSelectedHashTags([...selectedHashTags, tag]);
     }
     setTagInput("");
+    setShowSuggestions(false);
   };
 
   const removeTag = (tag: string) => {
     setSelectedHashTags(selectedHashTags.filter(t => t !== tag));
   };
 
+  const handleTagInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setTagInput(value);
+    
+    // Filter and fetch suggestions based on input
+    if (value.trim().length > 0) {
+      try {
+        // First show local filtered suggestions immediately 
+        const localFiltered = tagSuggestions.filter(tag => 
+          tag.toLowerCase().includes(value.toLowerCase()) && 
+          !selectedHashTags.includes(tag)
+        );
+        
+        // Then fetch fresh suggestions from API if the input is meaningful
+        if (value.trim().length > 1) {
+          const freshSuggestions = await getAllTagNamesAPI(value.trim());
+          const filteredFresh = freshSuggestions.filter(tag => 
+            !selectedHashTags.includes(tag)
+          );
+          
+          // Merge and deduplicate 
+          const combined = [...new Set([...localFiltered, ...filteredFresh])];
+          setTagSuggestions(prev => {
+            const newSuggestions = [...new Set([...prev, ...filteredFresh])];
+            return newSuggestions;
+          });
+        }
+        
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error('Error fetching tag suggestions:', error);
+        // Fallback to local filtering
+        const filtered = tagSuggestions.filter(tag => 
+          tag.toLowerCase().includes(value.toLowerCase()) && 
+          !selectedHashTags.includes(tag)
+        );
+        setShowSuggestions(filtered.length > 0);
+      }
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
       addTag();
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
     }
   };
 
@@ -123,8 +191,8 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
       const listingResult = await createListing({
         title,
         description,
-        transaction_type: transactionType,
-        property_type: propertyType,
+        transaction_type_id: transactionTypeId,
+        property_type_id: propertyTypeId,
         province,
         ward,
         address,
@@ -133,7 +201,8 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
         length: length ? parseFloat(length) : undefined,
         price: price ? price.replace(/\D/g, '') : undefined,
         direction,
-        broker_id: user.id
+        broker_id: user.id,
+        tags: selectedHashTags // Include tags in the request
       });
 
       if (!listingResult.success) {
@@ -142,6 +211,9 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
       }
 
       console.log("Listing created with ID:", listingResult.id);
+      if (listingResult.tags && listingResult.tags.length > 0) {
+        console.log(`Processed ${listingResult.tags.length} tags:`, listingResult.tags.map(t => t.name));
+      }
 
       // Upload files if any
       if (selectedFiles.length > 0) {
@@ -153,7 +225,11 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
         console.log("Upload results:", uploadResults);
       }
 
-      alert("Đăng bài thành công!");
+      const successMessage = listingResult.tags && listingResult.tags.length > 0 
+        ? `Đăng bài thành công! Đã tạo/gắn ${listingResult.tags.length} hashtags.`
+        : "Đăng bài thành công!";
+      
+      alert(successMessage);
       onSuccess?.();
 
     } catch (error) {
@@ -175,49 +251,50 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
               Loại giao dịch <span className="text-red-500">*</span>
             </label>
-            <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
-              <button
-                type="button"
-                onClick={() => setTransactionType("mua-ban")}
-                className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${transactionType === "mua-ban"
-                  ? "bg-white dark:bg-slate-700 text-emerald-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                  }`}
+            {optionsLoading ? (
+              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-lg py-3 px-4 text-sm text-slate-500">
+                Đang tải...
+              </div>
+            ) : (
+              <select
+                value={transactionTypeId}
+                onChange={(e) => setTransactionTypeId(e.target.value)}
+                required
+                className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-slate-900 dark:text-white"
               >
-                Mua bán
-              </button>
-              <button
-                type="button"
-                onClick={() => setTransactionType("cho-thue")}
-                className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${transactionType === "cho-thue"
-                  ? "bg-white dark:bg-slate-700 text-emerald-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                  }`}
-              >
-                Cho thuê
-              </button>
-            </div>
+                <option value="">Chọn loại giao dịch</option>
+                {transactionTypes.map(type => (
+                  <option key={type.id} value={type.id}>{type.name}</option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>
             <label htmlFor="propertyType" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
               Loại bất động sản <span className="text-red-500">*</span>
             </label>
-            <select
-              id="propertyType"
-              value={propertyType}
-              onChange={(e) => setPropertyType(e.target.value)}
-              required
-              className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-slate-900 dark:text-white"
-            >
-              <option value="">Chọn loại hình</option>
-              {propertyTypes.map(type => (
-                <option key={type.id} value={type.id}>{type.label}</option>
-              ))}
-            </select>
+            {optionsLoading ? (
+              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-lg py-3 px-4 text-sm text-slate-500">
+                Đang tải...
+              </div>
+            ) : (
+              <select
+                id="propertyType"
+                value={propertyTypeId}
+                onChange={(e) => setPropertyTypeId(e.target.value)}
+                required
+                className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-slate-900 dark:text-white"
+              >
+                <option value="">Chọn loại hình</option>
+                {propertyTypes.map(type => (
+                  <option key={type.id} value={type.id}>{type.name}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
       </section>
@@ -278,7 +355,7 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              {transactionType === "cho-thue" ? "Giá thuê/tháng" : "Tổng giá"} <span className="text-red-500">*</span>
+              {selectedTransactionType?.hashtag === "cho-thue" ? "Giá thuê/tháng" : "Tổng giá"} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
@@ -376,15 +453,40 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
               <input
                 type="text"
                 value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
+                onChange={handleTagInputChange}
                 onKeyDown={handleKeyPress}
+                onFocus={() => tagInput && setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 placeholder="Ví dụ: chính-chủ, mặt-tiền..."
                 className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2 px-7 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
               />
+              
+              {/* Tag Suggestions Dropdown */}
+              {showSuggestions && tagInput && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-40 overflow-y-auto z-10">
+                  {tagSuggestions
+                    .filter(tag => 
+                      tag.toLowerCase().includes(tagInput.toLowerCase()) && 
+                      !selectedHashTags.includes(tag)
+                    )
+                    .slice(0, 5) // Limit to 5 suggestions
+                    .map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => addTag(tag)}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-white"
+                      >
+                        #{tag}
+                      </button>
+                    ))
+                  }
+                </div>
+              )}
             </div>
             <button
               type="button"
-              onClick={addTag}
+              onClick={() => addTag()}
               className="px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2"
             >
               <Plus className="size-4" />

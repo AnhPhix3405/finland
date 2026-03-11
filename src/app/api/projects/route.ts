@@ -40,6 +40,14 @@ export async function GET(request: NextRequest) {
       where,
       skip,
       take: limit,
+      include: {
+        property_types: true,
+        project_tags: {
+          include: {
+            tags: true
+          }
+        }
+      },
       orderBy: [
         { created_at: 'desc' },
         { name: 'asc' }
@@ -83,7 +91,7 @@ export async function POST(request: NextRequest) {
       area_min,
       area_max,
       price,
-      project_type,
+      property_type_id,
       province,
       ward
     } = body;
@@ -127,7 +135,7 @@ export async function POST(request: NextRequest) {
         area_min: area_min ? parseInt(area_min.toString()) : null,
         area_max: area_max ? parseInt(area_max.toString()) : null,
         price: price ? parseFloat(price.toString()) : 0,
-        project_type: project_type || 'Căn hộ',
+        property_type_id: property_type_id || null,
         province,
         ward
       }

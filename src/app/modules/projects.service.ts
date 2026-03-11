@@ -13,7 +13,7 @@ export interface ProjectData {
     area_min?: number | string;
     area_max?: number | string;
     price?: number | string;
-    project_type?: string;
+    property_type_id?: string;
 }
 
 export const createProject = async (data: ProjectData) => {

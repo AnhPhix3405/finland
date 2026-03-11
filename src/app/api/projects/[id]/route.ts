@@ -23,6 +23,7 @@ export async function GET(
                 OR: whereConditions
             },
             include: {
+                property_types: true,
                 project_tags: {
                     include: {
                         tags: true
