@@ -13,13 +13,12 @@ interface Broker {
   working_area: string | null;
   specialization: string | null;
   bio: string | null;
-  slug: string | null;
   is_active: boolean;
 }
 
 export default function AdminBrokerDetail() {
   const params = useParams();
-  const slug = params?.id as string;
+  const phone = params?.id as string;
 
   const [broker, setBroker] = useState<Broker | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,13 +28,13 @@ export default function AdminBrokerDetail() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch broker theo slug
+  // Fetch broker theo phone
   useEffect(() => {
-    if (!slug) return;
+    if (!phone) return;
     const fetchBroker = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/brokers/${slug}`);
+        const res = await fetch(`/api/brokers/${phone}`);
         const json = await res.json();
         if (json.success) {
           setBroker(json.data);
@@ -47,7 +46,7 @@ export default function AdminBrokerDetail() {
       }
     };
     fetchBroker();
-  }, [slug]);
+  }, [phone]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,14 +56,14 @@ export default function AdminBrokerDetail() {
   };
 
   const handleSave = async () => {
-    if (!slug) {
-      alert('Không tìm thấy slug!');
+    if (!phone) {
+      alert('Không tìm thấy số điện thoại!');
       return;
     }
     setIsUploading(true);
     try {
       if (avatarFile) {
-        await uploadBrokerAvatar(avatarFile, slug);
+        await uploadBrokerAvatar(avatarFile, phone);
       }
       alert('Lưu thông tin thành công!');
     } catch (error) {

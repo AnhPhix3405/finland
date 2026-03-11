@@ -14,7 +14,7 @@ export interface UpdateBrokerData {
   avatar_url?: string;
 }
 
-export const updateBroker = async (slug: string, data: UpdateBrokerData) => {
+export const updateBroker = async (phone: string, data: UpdateBrokerData) => {
   try {
     const response = await fetch('/api/brokers', {
       method: 'PATCH',
@@ -22,7 +22,7 @@ export const updateBroker = async (slug: string, data: UpdateBrokerData) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        slug,
+        phone,
         ...data,
       }),
     });
@@ -47,9 +47,9 @@ export const updateBroker = async (slug: string, data: UpdateBrokerData) => {
   }
 };
 
-export const getBroker = async (slug: string) => {
+export const getBroker = async (phone: string) => {
   try {
-    const response = await fetch(`/api/brokers/${slug}`);
+    const response = await fetch(`/api/brokers/${phone}`);
     const result = await response.json();
     return result;
   } catch (error) {

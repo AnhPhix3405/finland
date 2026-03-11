@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 
-// GET /api/brokers/[slug] - Lấy 1 broker theo slug
+// GET /api/brokers/[phone] - Lấy 1 broker theo phone
 export async function GET(
     _request: NextRequest,
     { params }: { params: Promise<{ slug: string }> }
 ) {
     try {
-        const { slug } = await params;
+        const { slug: phone } = await params;
 
         const broker = await prisma.brokers.findFirst({
-            where: { slug }
+            where: { phone }
         });
 
         if (!broker) {

@@ -10,7 +10,6 @@ export interface User {
     specialization?: string;
     bio?: string;
     is_active: boolean;
-    slug?: string;
     province?: string;
     ward?: string;
     referrer_phone?: string;

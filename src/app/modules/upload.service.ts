@@ -64,7 +64,7 @@ export async function deleteAttachment(id: string) {
 }
 
 
-export async function uploadBrokerAvatar(file: File, brokerSlug: string) {
+export async function uploadBrokerAvatar(file: File, brokerPhone: string) {
   // lấy chữ ký
   const signRes = await fetch("/api/upload/avatar/sign", {
     method: "POST"
@@ -97,7 +97,7 @@ export async function uploadBrokerAvatar(file: File, brokerSlug: string) {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        slug: brokerSlug,
+        phone: brokerPhone,
         avatar_url: uploadData.secure_url
       })
     })

@@ -10,7 +10,6 @@ interface Broker {
   avatar_url: string | null;
   working_area: string | null;
   specialization: string | null;
-  slug: string | null;
   is_active: boolean;
 }
 
@@ -18,26 +17,23 @@ const MOCK_BROKERS = [
   {
     id: 'mock_1',
     full_name: 'Nguyễn Văn Nam',
-    phone: '0901 234 567',
+    phone: '0901234567',
     working_area: 'Quận 2, TP.HCM',
-    avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC9Zy9T23JlMs6clxA8w3_e9InmK4IoD_B1ccL9qigX9BdlKu1MEJhVY9y1W92_DIFZOz8EThzgcltxG8GHT-kRy6n9VE0eel7fivwcJiihAlcT3RTBtVBUQ5HjVIqOEyXpSuYyDRfGEEYRkmc8dWuYf-0yyZVZQEVKDaKe0F0YVL62xslVUaQPIwi6wlCrd7KT4HQOid7McvEcgYkDx94BVAAlIAvTTKifktrK7OGhX8t_KodLEtyYBeYhhos9DPwTRfP0aXy9e8pg',
-    slug: 'demo'
+    avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC9Zy9T23JlMs6clxA8w3_e9InmK4IoD_B1ccL9qigX9BdlKu1MEJhVY9y1W92_DIFZOz8EThzgcltxG8GHT-kRy6n9VE0eel7fivwcJiihAlcT3RTBtVBUQ5HjVIqOEyXpSuYyDRfGEEYRkmc8dWuYf-0yyZVZQEVKDaKe0F0YVL62xslVUaQPIwi6wlCrd7KT4HQOid7McvEcgYkDx94BVAAlIAvTTKifktrK7OGhX8t_KodLEtyYBeYhhos9DPwTRfP0aXy9e8pg'
   },
   {
     id: 'mock_2',
     full_name: 'Trần Thị Minh',
-    phone: '0912 345 678',
+    phone: '0912345678',
     working_area: 'Thanh Xuân, Hà Nội',
-    avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDjN8HsIdKsWlAC3e5UUEnQD2WwioKW11PCwPmSYJT-g9P19TjDZihMTA6ZpvrLuEdsv2baeNt_WUcfGWg8TVETZLR2kVyolnu44DYAxJ2b0jR6ONxGO9BtjG0fTzCffoNX9jv0sKjsdfWH9TySDCGUUNssHAp790t7Fvrxt6ITCO1Zo93ZPexfyFF_9QlWqIZI5bbu_8JzRHlIUkXi0FT9_80yWpFSovPVPeQdGKEDRHX_1J3_BKJ8O983CYn0ejvHFnJ3gGOBnkyo',
-    slug: 'demo'
+    avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDjN8HsIdKsWlAC3e5UUEnQD2WwioKW11PCwPmSYJT-g9P19TjDZihMTA6ZpvrLuEdsv2baeNt_WUcfGWg8TVETZLR2kVyolnu44DYAxJ2b0jR6ONxGO9BtjG0fTzCffoNX9jv0sKjsdfWH9TySDCGUUNssHAp790t7Fvrxt6ITCO1Zo93ZPexfyFF_9QlWqIZI5bbu_8JzRHlIUkXi0FT9_80yWpFSovPVPeQdGKEDRHX_1J3_BKJ8O983CYn0ejvHFnJ3gGOBnkyo'
   },
   {
     id: 'mock_3',
     full_name: 'Lê Hoàng Long',
-    phone: '0988 777 999',
+    phone: '0988777999',
     working_area: 'Sơn Trà, Đà Nẵng',
-    avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCF7_a9QO3ZTe9AiE0RaqZHk4WWVdF8JV_exc_ZElD2Fa5J2xHahPnCEuHsk91hG_7UTXvzhgjeVzkw696xse4o5FTbNDEDYlyxRAX5diyLuzRi47pYS4sfljywyqy7iuHKx2DTu0wj0-flpf2Ty4FTv5cwMaXclLpXUR0ix-DICxoMjwNBPBFerF2eXQXOljYKsWq4-ZC6VnWib1MRPnTERY-0rWX5tKD3yNdpfJft8EbbihGoZSdPaYO0_oRIjKYeaoibejKbesXn',
-    slug: 'demo'
+    avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCF7_a9QO3ZTe9AiE0RaqZHk4WWVdF8JV_exc_ZElD2Fa5J2xHahPnCEuHsk91hG_7UTXvzhgjeVzkw696xse4o5FTbNDEDYlyxRAX5diyLuzRi47pYS4sfljywyqy7iuHKx2DTu0wj0-flpf2Ty4FTv5cwMaXclLpXUR0ix-DICxoMjwNBPBFerF2eXQXOljYKsWq4-ZC6VnWib1MRPnTERY-0rWX5tKD3yNdpfJft8EbbihGoZSdPaYO0_oRIjKYeaoibejKbesXn'
   }
 ];
 
@@ -68,8 +64,7 @@ export default function AdminBrokerList() {
     full_name: string,
     phone: string,
     working_area: string | null,
-    avatar_url: string | null,
-    slug: string | null
+    avatar_url: string | null
   ) => (
     <tr key={id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
       <td className="px-6 py-4">
@@ -87,7 +82,7 @@ export default function AdminBrokerList() {
       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{phone}</td>
       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{working_area ?? '—'}</td>
       <td className="px-6 py-4 text-right whitespace-nowrap">
-        <Link href={`/admin/moi-gioi/${slug ?? id}`} className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1" title="Chỉnh sửa">
+        <Link href={`/admin/moi-gioi/${phone}`} className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1" title="Chỉnh sửa">
           <span className="material-symbols-outlined text-lg">edit</span>
         </Link>
         <button className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 ml-1" title="Xóa">
@@ -111,7 +106,7 @@ export default function AdminBrokerList() {
               />
             </div>
           </div>
-          <Link href="/admin/moi-gioi/demo" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-sm text-sm font-medium flex items-center gap-2 transition-colors whitespace-nowrap">
+          <Link href="/admin/moi-gioi/new" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-sm text-sm font-medium flex items-center gap-2 transition-colors whitespace-nowrap">
             <span className="material-symbols-outlined text-sm">add</span>
             <span>Thêm môi giới</span>
           </Link>
@@ -132,7 +127,7 @@ export default function AdminBrokerList() {
               <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                 {/* Mock rows */}
                 {MOCK_BROKERS.map((b) =>
-                  renderRow(b.id, b.full_name, b.phone, b.working_area, b.avatar_url, b.slug)
+                  renderRow(b.id, b.full_name, b.phone, b.working_area, b.avatar_url)
                 )}
 
                 {/* API rows */}
@@ -146,7 +141,7 @@ export default function AdminBrokerList() {
                     </td>
                   </tr>
                 ) : brokers.map((b) =>
-                  renderRow(b.id, b.full_name, b.phone, b.working_area, b.avatar_url, b.slug)
+                  renderRow(b.id, b.full_name, b.phone, b.working_area, b.avatar_url)
                 )}
               </tbody>
             </table>

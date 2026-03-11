@@ -43,7 +43,7 @@ export default function DebugUserPage() {
               <p><strong>Province:</strong> {user.province || "N/A"}</p>
               <p><strong>Ward:</strong> {user.ward || "N/A"}</p>
               <p><strong>Is Active:</strong> {user.is_active ? "✅ Yes" : "❌ No"}</p>
-              <p><strong>Slug:</strong> {user.slug || "N/A"}</p>
+              <p><strong>Phone:</strong> {user.phone || "N/A"}</p>
               <p><strong>Created At:</strong> {user.created_at ? new Date(user.created_at).toLocaleString() : "N/A"}</p>
             </div>
           ) : (

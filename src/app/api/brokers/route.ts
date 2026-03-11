@@ -80,23 +80,23 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH - Cập nhật môi giới theo slug
+// PATCH - Cập nhật môi giới theo phone
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { slug, password, ...updateData } = body;
+    const { phone, password, ...updateData } = body;
 
 
-    if (!slug) {
+    if (!phone) {
       return NextResponse.json(
-        { success: false, error: 'Slug môi giới là bắt buộc' },
+        { success: false, error: 'Số điện thoại môi giới là bắt buộc' },
         { status: 400 }
       );
     }
 
-    // Tìm broker theo slug để lấy id
+    // Tìm broker theo phone để lấy id
     const existingBroker = await prisma.brokers.findFirst({
-      where: { slug }
+      where: { phone }
     });
 
     if (!existingBroker) {

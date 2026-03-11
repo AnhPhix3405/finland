@@ -21,7 +21,7 @@ export default function DebugBrokerPage() {
   }
 
   const testUpdateBroker = async () => {
-    if (!user?.slug) return;
+    if (!user?.phone) return;
     
     const testData = {
       full_name: user.full_name + " (Updated)",
@@ -29,7 +29,7 @@ export default function DebugBrokerPage() {
       province: "Test Province",
     };
 
-    const result = await updateBroker(user.slug, testData);
+    const result = await updateBroker(user.phone, testData);
     setTestResult(result);
   };
 
@@ -43,7 +43,7 @@ export default function DebugBrokerPage() {
           {user ? (
             <div className="space-y-2 text-sm">
               <p><strong>ID:</strong> {user.id}</p>
-              <p><strong>Slug:</strong> {user.slug}</p>
+              <p><strong>Phone:</strong> {user.phone}</p>
               <p><strong>Full Name:</strong> {user.full_name}</p>
               <p><strong>Phone:</strong> {user.phone}</p>
               <p><strong>Email:</strong> {user.email || "N/A"}</p>
@@ -60,7 +60,7 @@ export default function DebugBrokerPage() {
           
           <button
             onClick={testUpdateBroker}
-            disabled={!user?.slug}
+            disabled={!user?.phone}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
           >
             Test Update Broker

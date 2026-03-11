@@ -85,7 +85,7 @@ export default function AccountPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.slug) return;
+    if (!user?.phone) return;
 
     setIsSubmitting(true);
     setMessage({ type: '', text: '' });
@@ -95,7 +95,7 @@ export default function AccountPage() {
       
       // Upload avatar first if there's a selected file
       if (selectedFile) {
-        const uploadResult = await uploadBrokerAvatar(selectedFile, user.slug);
+        const uploadResult = await uploadBrokerAvatar(selectedFile, user.phone);
         if (uploadResult && uploadResult.brokerUpdate?.success) {
           // Avatar already updated in database by uploadBrokerAvatar
           updateData.avatar_url = uploadResult.secure_url;
@@ -112,7 +112,7 @@ export default function AccountPage() {
       );
       
       if (hasFormChanges || selectedFile) {
-        const result = await updateBroker(user.slug, updateData);
+        const result = await updateBroker(user.phone, updateData);
         
         if (result.success) {
           // Clear selected file and preview after successful update
