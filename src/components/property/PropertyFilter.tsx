@@ -1,3 +1,5 @@
+"use client";
+
 import { MapPin, ChevronDown, ArrowUpDown, Filter } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 

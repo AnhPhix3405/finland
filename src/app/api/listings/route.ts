@@ -262,6 +262,39 @@ export async function POST(request: NextRequest) {
       contact_name: rawContactName, contact_phone: rawContactPhone
     } = body;
 
+    // Generate listing_code (e.g. FIN26000001)
+    const currentYearStr = new Date().getFullYear().toString().substring(2, 4);
+    const prefix = `FIN${currentYearStr}`;
+    
+    // Find the latest listing code for the current year to determine next sequence
+    const latestListing = await prisma.listings.findFirst({
+      where: {
+        listing_code: {
+          startsWith: prefix
+        }
+      },
+      orderBy: {
+        listing_code: 'desc'
+      },
+      select: {
+        listing_code: true
+      }
+    });
+
+    let nextSequenceNumber = 1;
+    if (latestListing && latestListing.listing_code) {
+      // Extract the 6-digit sequence from the end
+      const lastSeqStr = latestListing.listing_code.substring(5); // prefix is 5 chars e.g. FIN26
+      const lastSeqNum = parseInt(lastSeqStr, 10);
+      if (!isNaN(lastSeqNum)) {
+        nextSequenceNumber = lastSeqNum + 1;
+      }
+    }
+    
+    // Format to 6 digits, e.g. 000001
+    const sequenceStr = nextSequenceNumber.toString().padStart(6, '0');
+    const finalListingCode = `${prefix}${sequenceStr}`;
+
     // Convert price to BigInt if provided and not empty
     let priceBigInt: bigint | null = null;
     if (price !== undefined && price !== null && price !== "") {
@@ -347,6 +380,7 @@ export async function POST(request: NextRequest) {
         status: 'Đang chờ duyệt',
         contact_name: finalContactName,
         contact_phone: finalContactPhone,
+        listing_code: finalListingCode,
       },
       include: {
         brokers: {

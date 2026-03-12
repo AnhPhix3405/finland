@@ -11,6 +11,7 @@ export interface PropertyCardProps {
   tags: string[];
   isPriority?: boolean;
   slug?: string | null;
+  type?: "mua-ban" | "cho-thue";
 }
 
 export function PropertyCard({
@@ -23,9 +24,11 @@ export function PropertyCard({
   tags,
   isPriority = false,
   slug,
+  type = "mua-ban",
 }: PropertyCardProps) {
   // Use slug for URL, fallback to id if no slug
-  const detailUrl = slug ? `/mua-ban/${slug}` : `/mua-ban/${id}`;
+  const basePath = type === "cho-thue" ? "/cho-thue" : "/mua-ban";
+  const detailUrl = slug ? `${basePath}/${slug}` : `${basePath}/${id}`;
 
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden rounded-sm hover:shadow-lg transition-shadow flex flex-col h-full">

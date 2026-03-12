@@ -137,3 +137,27 @@ export async function getListingsByHashtags(hashtags: string[], params?: {
     hashtags
   });
 }
+
+// Function cho trang "Tin đăng của tôi" (yêu cầu Authorization token)
+export async function getMyListings(
+  token: string, 
+  status: string = "all"
+): Promise<{ success: boolean; data: any[]; pagination?: any; error?: string }> {
+  try {
+    const response = await fetch(`/api/brokers/me/listings?status=${status}&limit=50`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error fetching my listings:', error);
+    return {
+      success: false,
+      error: 'Lỗi tải danh sách tin đăng',
+      data: []
+    };
+  }
+}
