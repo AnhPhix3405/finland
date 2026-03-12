@@ -66,7 +66,7 @@ export async function deleteAttachment(id: string) {
 
 export async function uploadBrokerAvatar(file: File, brokerPhone: string) {
   // lấy chữ ký
-  const signRes = await fetch("/api/upload/avatar/sign", {
+  const signRes = await fetch("/api/upload/brokers/sign", {
     method: "POST"
   })
 
@@ -91,7 +91,7 @@ export async function uploadBrokerAvatar(file: File, brokerPhone: string) {
     )
     const uploadData = await uploadRes.json()
     console.log("uploadData", uploadData)
-    
+
     // Update broker avatar_url in database
     const updateRes = await fetch("/api/brokers", {
       method: "PATCH",
@@ -101,13 +101,13 @@ export async function uploadBrokerAvatar(file: File, brokerPhone: string) {
         avatar_url: uploadData.secure_url
       })
     })
-    
+
     const updateResult = await updateRes.json()
-    
+
     if (!updateResult.success) {
       throw new Error(updateResult.error || 'Failed to update broker avatar')
     }
-    
+
     return {
       ...uploadData,
       brokerUpdate: updateResult
@@ -119,46 +119,51 @@ export async function uploadBrokerAvatar(file: File, brokerPhone: string) {
 }
 
 export async function uploadAttachments(file: File) {
-  // lấy chữ ký
-  const signRes = await fetch("/api/upload/sign", {
-    method: "POST"
-  })
+  // Determine role and user info
+  const userStore = (await import('@/src/store/userStore')).useUserStore.getState();
+  const user = userStore.user;
+  console.log("user", user)
+  const isBroker = user?.role === 'broker';
 
-  const { timestamp, signature, cloudName, apiKey } =
-    await signRes.json()
+  // Use role-specific sign endpoint
+  const signEndpoint = isBroker ? '/api/upload/brokers/sign' : '/api/upload/sign';
+  const folder = isBroker ? 'finland/brokers' : 'finland/attachments';
 
-  const formData = new FormData()
+  // Get upload signature
+  const signRes = await fetch(signEndpoint, { method: 'POST' });
+  const { timestamp, signature, cloudName, apiKey } = await signRes.json();
 
-  formData.append("file", file)
-  formData.append("api_key", apiKey)
-  formData.append("timestamp", timestamp)
-  formData.append("signature", signature)
-  formData.append("folder", "finland/attachments")
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('api_key', apiKey);
+  formData.append('timestamp', timestamp);
+  formData.append('signature', signature);
+  formData.append('folder', folder);
 
   try {
     const uploadRes = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
-      {
-        method: "POST",
-        body: formData
-      }
-    )
-    const uploadData = await uploadRes.json()
-    console.log("uploadData", uploadData)
+      { method: 'POST', body: formData }
+    );
+    const uploadData = await uploadRes.json();
+    console.log('uploadData', uploadData);
+
     const attachmentData: AttachmentData = {
       url: uploadData.url,
       secure_url: uploadData.secure_url,
       size_bytes: uploadData.bytes.toString(),
       original_name: uploadData.original_filename,
       public_id: uploadData.public_id,
-      target_type: "admin"
-    }
-    console.log("attachmentData", attachmentData)
-    await createAttachment(attachmentData)
+      // broker: target_type='broker', target_id=broker user id
+      // admin: target_type='admin', no target_id needed
+      target_type: isBroker ? 'broker' : 'admin',
+      target_id: isBroker ? user?.id : undefined,
+    };
+    console.log('attachmentData', attachmentData);
+    await createAttachment(attachmentData);
     return uploadData;
-  }
-  catch (err) {
-    console.log(err)
+  } catch (err) {
+    console.log(err);
   }
 }
 

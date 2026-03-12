@@ -61,8 +61,6 @@ model projects {
   name                String
   slug                String             @unique @db.VarChar(255)
   developer           String?            @db.VarChar(255)
-  contact_name        String?            @db.VarChar(255)
-  contact_phone       String?            @db.VarChar(20)
   content             String?
   area_min            Int?
   area_max            Int?
@@ -106,6 +104,8 @@ model listings {
   property_type_id    String?            @db.Uuid
   transaction_type_id String?            @db.Uuid
   slug                String?
+  contact_name        String?            @db.VarChar(255)
+  contact_phone       String?            @db.VarChar(50)
   brokers             brokers            @relation(fields: [broker_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_listings_broker")
   property_types      property_types?    @relation(fields: [property_type_id], references: [id], onUpdate: NoAction, map: "fk_listings_property_type")
   transaction_types   transaction_types? @relation(fields: [transaction_type_id], references: [id], onUpdate: NoAction, map: "fk_listings_transaction_type")

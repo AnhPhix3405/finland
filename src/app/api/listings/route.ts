@@ -258,7 +258,8 @@ export async function POST(request: NextRequest) {
     const {
       broker_id, title, description, slug: clientSlug, transaction_type_id,
       property_type_id, province, ward, address,
-      area, width, length, price, direction, tags
+      area, width, length, price, direction, tags,
+      contact_name: rawContactName, contact_phone: rawContactPhone
     } = body;
 
     // Convert price to BigInt if provided and not empty
@@ -296,6 +297,37 @@ export async function POST(request: NextRequest) {
       finalSlug = await generateUniqueSlug(title);
     }
 
+    // Resolve contact info: use provided value or fall back to broker data
+    let finalContactName: string | null = null;
+    let finalContactPhone: string | null = null;
+
+    if (rawContactName && rawContactName.trim()) {
+      finalContactName = rawContactName.trim();
+    } else {
+      // Fallback: fetch broker data
+      const broker = await prisma.brokers.findUnique({
+        where: { id: broker_id },
+        select: { full_name: true, phone: true }
+      });
+      if (broker) {
+        finalContactName = broker.full_name;
+        finalContactPhone = broker.phone;
+      }
+    }
+
+    if (rawContactPhone && rawContactPhone.trim()) {
+      finalContactPhone = rawContactPhone.trim();
+    } else if (finalContactPhone === null) {
+      // Only fetch if we haven't already fetched broker (fallback above sets it)
+      const broker = await prisma.brokers.findUnique({
+        where: { id: broker_id },
+        select: { phone: true }
+      });
+      if (broker) {
+        finalContactPhone = broker.phone;
+      }
+    }
+
     const listing = await prisma.listings.create({
       data: {
         broker_id,
@@ -313,6 +345,8 @@ export async function POST(request: NextRequest) {
         direction,
         slug: finalSlug,
         status: 'Đang chờ duyệt',
+        contact_name: finalContactName,
+        contact_phone: finalContactPhone,
       },
       include: {
         brokers: {
@@ -328,7 +362,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Process tags if provided
-    let processedTags = [];
+    let processedTags: Awaited<ReturnType<typeof processTagsForListing>> = [];
     if (tags && Array.isArray(tags) && tags.length > 0) {
       try {
         processedTags = await processTagsForListing(tags, listing.id);

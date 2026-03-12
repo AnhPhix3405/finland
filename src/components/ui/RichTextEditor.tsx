@@ -9,7 +9,7 @@ import MediaPicker from '../feature/MediaPicker';
 
 const mdParser = new MarkdownIt();
 
-export default function RichTextEditor({ value, onChange }: { value?: string, onChange?: (val: string) => void }) {
+export default function RichTextEditor({ value, onChange, placeholder }: { value?: string, onChange?: (val: string) => void, placeholder?: string }) {
     const mdEditorRef = useRef<MdEditor>(null);
     const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
 

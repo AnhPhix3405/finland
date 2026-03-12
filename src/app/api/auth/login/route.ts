@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
             success: true,
             data: {
                 ...safeBroker,
+                role: 'broker',
                 access_token: accessToken
             },
             message: 'Đăng nhập thành công'

@@ -15,6 +15,7 @@ export interface User {
     referrer_phone?: string;
     created_at?: string | Date;
     updated_at?: string | Date;
+    role?: 'broker' | 'admin';
 }
 
 interface UserState {

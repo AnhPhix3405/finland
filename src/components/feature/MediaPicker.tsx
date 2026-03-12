@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, UploadCloud, HelpCircle } from "lucide-react";
 import { uploadAttachments } from "@/src/app/modules/upload.service";
+import { useUserStore } from "@/src/store/userStore";
 
 interface MediaPickerProps {
     isOpen: boolean;
@@ -27,10 +28,12 @@ export default function MediaPicker({ isOpen, onClose, onSelect }: MediaPickerPr
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { user } = useUserStore();
 
     const fetchAdminImages = React.useCallback(async () => {
         try {
-            const res = await fetch("/api/attachments?target_type=admin&limit=50");
+            const targetType = user?.role === 'broker' ? 'broker' : 'admin';
+            const res = await fetch(`/api/attachments?target_type=${targetType}&limit=50`);
             const json = await res.json();
             if (json.success && json.data) {
                 const fetchedUrls = json.data.map((item: any) => item.secure_url).filter(Boolean);
@@ -41,9 +44,9 @@ export default function MediaPicker({ isOpen, onClose, onSelect }: MediaPickerPr
                 });
             }
         } catch (err) {
-            console.error("Error fetching admin images:", err);
+            console.error("Error fetching images:", err);
         }
-    }, []);
+    }, [user?.role]);
 
     useEffect(() => {
         if (!isOpen) return;

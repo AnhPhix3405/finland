@@ -26,8 +26,6 @@ interface Project {
   area_max?: number;
   price?: number;
   content?: string;
-  contact_name?: string;
-  contact_phone?: string;
   project_tags?: Array<{
     tags: {
       id: string;
@@ -356,36 +354,6 @@ export default function ProjectDetail() {
         </div>
 
         <div className="w-full lg:w-[30%] space-y-6">
-          <div className="sticky top-20 bg-white dark:bg-slate-800 p-6 border border-gray-200 dark:border-slate-700 shadow-sm text-center">
-            <div className="w-24 h-24 mx-auto bg-gray-200 dark:bg-slate-700 rounded-full mb-4 overflow-hidden border-2 border-emerald-500 p-1">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt="Chuyên viên tư vấn" className="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdt50jowWafDqQjbTSzVcN9Tg4TZjzl1rj9kXryD9l29_NQncjG9N8XT7m9nNITBwQR5Te7zN1T08wL3kM7MRUNKKsi-2rb25bobcWWDrZlENnpEVb7kisfnasMiVAct8DzHjQXRv3FWx4-sQnvIK-n-PKGgN0_Z1fZvCSU8TMPE_fSikflh8XcVXMbRmzhVoPWBWJiTDsXWk5tHGmg6I4M8qsVMLCbh6QMflsSLdEL0divbBGTE7xdAtuG1UbYwSNP16rjZlFID2P"/>
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
-              {project.contact_name || "Chuyên viên tư vấn"}
-            </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Chuyên viên tư vấn</p>
-            <div className="space-y-3">
-              {project.contact_phone && (
-                <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 flex flex-col items-center justify-center transition-colors shadow-lg shadow-emerald-600/30">
-                  <div className="flex items-center text-lg mb-1">
-                    <span className="material-symbols-outlined mr-2 text-[24px]">call</span>
-                    GỌI NGAY
-                  </div>
-                  <span className="text-xl tracking-wider">{project.contact_phone}</span>
-                </button>
-              )}
-              <button className="w-full bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-500 border border-emerald-600 font-semibold py-2.5 px-4 flex items-center justify-center transition-colors">
-                <span className="material-symbols-outlined mr-2 text-[20px]">chat</span>
-                Nhắn tin Zalo
-              </button>
-              <button className="w-full bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-gray-300 dark:border-slate-600 font-semibold py-2.5 px-4 flex items-center justify-center transition-colors">
-                <span className="material-symbols-outlined mr-2 text-[20px]">mail</span>
-                Yêu cầu hỗ trợ
-              </button>
-            </div>
-          </div>
-
           <div className="bg-white dark:bg-slate-800 p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 uppercase tracking-wide border-b border-gray-100 dark:border-slate-700 pb-2">Dự án lân cận</h3>
             <div className="space-y-4">

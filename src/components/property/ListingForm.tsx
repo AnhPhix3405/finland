@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import RichTextEditor from "../ui/TipTap";
+import RichTextEditor from "../ui/RichTextEditor";
 import { Camera, Plus, X, Check, Video } from "lucide-react";
 import { createListing } from "@/src/app/modules/listings.service";
 import { uploadListingAttachments } from "@/src/app/modules/upload.service";
@@ -60,6 +60,8 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
   const [width, setWidth] = useState("");
   const [length, setLength] = useState("");
   const [direction, setDirection] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
 
   // File states
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -225,7 +227,10 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
         price: price ? price.replace(/\D/g, '') : undefined,
         direction,
         broker_id: user.id,
-        tags: selectedHashTags // Include tags in the request
+        tags: selectedHashTags, // Include tags in the request
+        // Only send if user explicitly filled in, otherwise backend falls back to broker data
+        contact_name: contactName.trim() || undefined,
+        contact_phone: contactPhone.trim() || undefined,
       });
 
       if (!listingResult.success) {
@@ -538,13 +543,46 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
             <RichTextEditor
               value={description}
               onChange={setDescription}
-              placeholder="Mô tả chi tiết về bất động sản, tiện ích xung quanh, pháp lý..."
             />
           </div>
         </div>
       </section>
 
-      {/* 4. Hình ảnh & Video */}
+      {/* 4. Thông tin liên hệ */}
+      <section className="space-y-6">
+        <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-2">
+          <span className="size-2 bg-emerald-600 rounded-full"></span>
+          Thông tin liên hệ
+        </h4>
+        <p className="text-xs text-slate-500 dark:text-slate-400 -mt-4">
+          Để trống để dùng thông tin tài khoản của bạn ({user?.full_name} · {user?.phone}).
+          Điền vào nếu muốn hiển thị thông tin liên hệ khác.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tên liên hệ</label>
+            <input
+              type="text"
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+              placeholder={user?.full_name || "Để trống để dùng tên tài khoản"}
+              className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Số điện thoại liên hệ</label>
+            <input
+              type="tel"
+              value={contactPhone}
+              onChange={(e) => setContactPhone(e.target.value)}
+              placeholder={user?.phone || "Để trống để dùng SĐT tài khoản"}
+              className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Hình ảnh & Video */}
       <section className="space-y-6">
         <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-2">
           <span className="size-2 bg-emerald-600 rounded-full"></span>

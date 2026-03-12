@@ -19,6 +19,8 @@ export interface CreateListingData {
   visibility?: boolean;
   status?: string;
   tags?: string[]; // Array of tag names
+  contact_name?: string; // Override contact name, fallback to broker full_name
+  contact_phone?: string; // Override contact phone, fallback to broker phone
 }
 
 export interface ListingResponse {

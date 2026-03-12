@@ -19,6 +19,8 @@ interface Listing {
   direction?: string | null;
   status?: string | null;
   slug?: string | null;
+  contact_name?: string | null;
+  contact_phone?: string | null;
   brokers: {
     id: string;
     full_name: string;
