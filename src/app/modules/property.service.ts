@@ -35,7 +35,7 @@ export const getPropertyTypes = async (params?: {
 }): Promise<PropertyTypesResponse> => {
     try {
         const searchParams = new URLSearchParams();
-        
+
         if (params?.page) searchParams.append('page', params.page.toString());
         if (params?.limit) searchParams.append('limit', params.limit.toString());
         if (params?.search) searchParams.append('search', params.search);
@@ -54,7 +54,7 @@ export const createPropertyType = async (data: {
     hashtag?: string;
 }): Promise<PropertyTypeResponse> => {
     try {
-        const response = await fetch('/api/property_types', {
+        const response = await fetch('/api/admin/property_types', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -139,7 +139,7 @@ export const getTransactionTypes = async (params?: {
 }): Promise<TransactionTypesResponse> => {
     try {
         const searchParams = new URLSearchParams();
-        
+
         if (params?.page) searchParams.append('page', params.page.toString());
         if (params?.limit) searchParams.append('limit', params.limit.toString());
         if (params?.search) searchParams.append('search', params.search);
