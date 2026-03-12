@@ -18,7 +18,7 @@ export default function MuaBanPage() {
   });
 
   const buildHashtags = (filters: FilterState) => {
-    const hashtags = ['muaban']; // Always include base hashtag
+    const hashtags = ['mua-ban']; // Always include base hashtag
     
     // Add property type hashtag if selected
     if (filters.propertyType && filters.propertyType !== '') {

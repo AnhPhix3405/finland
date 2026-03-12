@@ -21,6 +21,8 @@ export interface CreateListingData {
   tags?: string[]; // Array of tag names
   contact_name?: string; // Override contact name, fallback to broker full_name
   contact_phone?: string; // Override contact phone, fallback to broker phone
+  floor_count?: number;
+  bedroom_count?: number;
 }
 
 export interface ListingResponse {
@@ -161,3 +163,40 @@ export async function getMyListings(
     };
   }
 }
+
+// Function để thay đổi trạng thái bài đăng (Ẩn tin/ Đã xong)
+export async function updateListingStatus(
+  id: string,
+  status: string,
+  token: string
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    const response = await fetch(`/api/listings/${id}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status })
+    });
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: 'Failed to update status' };
+  }
+}
+
+// Function xóa tin đăng
+export async function deleteListingLocal(id: string, token: string): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    const response = await fetch(`/api/listings/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: 'Failed to delete listing' };
+  }
+}
+

@@ -62,6 +62,8 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
   const [direction, setDirection] = useState("");
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [floorCount, setFloorCount] = useState("");
+  const [bedroomCount, setBedroomCount] = useState("");
 
   // File states
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -228,9 +230,10 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
         direction,
         broker_id: user.id,
         tags: selectedHashTags, // Include tags in the request
-        // Only send if user explicitly filled in, otherwise backend falls back to broker data
         contact_name: contactName.trim() || undefined,
         contact_phone: contactPhone.trim() || undefined,
+        floor_count: floorCount ? parseInt(floorCount) : undefined,
+        bedroom_count: bedroomCount ? parseInt(bedroomCount) : undefined,
       });
 
       if (!listingResult.success) {
@@ -438,14 +441,14 @@ export function ListingForm({ onSuccess }: ListingFormProps) {
           {showFloors && (
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Số tầng</label>
-              <input type="number" className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white" />
+              <input type="number" value={floorCount} onChange={(e) => setFloorCount(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white" />
             </div>
           )}
 
           {showBedrooms && (
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Số phòng ngủ</label>
-              <input type="number" className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white" />
+              <input type="number" value={bedroomCount} onChange={(e) => setBedroomCount(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg py-2.5 px-4 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white" />
             </div>
           )}
 

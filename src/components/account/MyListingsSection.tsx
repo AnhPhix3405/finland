@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Edit2, EyeOff, CheckCircle2, Trash2, Filter, ChevronDown, List as ListIcon } from "lucide-react";
+import { Edit2, EyeOff, CheckCircle2, Trash2, Filter, ChevronDown, List as ListIcon, X } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
-import { getMyListings } from "@/src/app/modules/listings.service";
+import { getMyListings, updateListingStatus, deleteListingLocal } from "@/src/app/modules/listings.service";
 import { useEffect } from "react";
+import Link from "next/link";
 
 type ListingStatus = "public" | "hidden" | "expired" | "sold" | "rejected" | "pending";
 
@@ -24,7 +25,7 @@ interface PropertyListing {
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   "Đang hiển thị": { label: "Đang hiển thị", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
-  "Đang ẩn": { label: "Đang ẩn", color: "text-slate-500", bg: "bg-slate-100 dark:bg-slate-800" },
+  "Đã ẩn": { label: "Đã ẩn", color: "text-slate-500", bg: "bg-slate-100 dark:bg-slate-800" },
   "Đã bán": { label: "Đã bán/xong", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
   "Đã xong": { label: "Đã bán/xong", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
   "Bị từ chối": { label: "Bị từ chối", color: "text-red-600", bg: "bg-red-50 dark:bg-red-900/20" },
@@ -47,6 +48,7 @@ export default function MyListingsSection() {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [listings, setListings] = useState<PropertyListing[]>([]);
+  const [message, setMessage] = useState({ type: '', text: '' }); // Thêm UX feedback
 
   useEffect(() => {
     if (!accessToken) return;
@@ -82,6 +84,42 @@ export default function MyListingsSection() {
 
     fetchListings();
   }, [accessToken]);
+
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    if (!accessToken) return;
+    try {
+      setLoading(true);
+      const res = await updateListingStatus(id, newStatus, accessToken);
+      if (res.success) {
+        setListings(prev => prev.map(l => l.id === id ? { ...l, status: newStatus as ListingStatus } : l));
+        setMessage({ type: 'success', text: `Đã đổi trạng thái thành: ${newStatus}` });
+      } else {
+        setMessage({ type: 'error', text: res.error || 'Cập nhật thất bại' });
+      }
+    } catch (e) {
+      setMessage({ type: 'error', text: 'Lỗi mạng' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!accessToken || !window.confirm('Bạn có chắc chắn muốn xóa bài đăng này ko? Hành động này không thể hoàn tác.')) return;
+    try {
+      setLoading(true);
+      const res = await deleteListingLocal(id, accessToken);
+      if (res.success) {
+         setListings(prev => prev.filter(l => l.id !== id));
+         setMessage({ type: 'success', text: 'Đã xóa bài đăng thành công' });
+      } else {
+         setMessage({ type: 'error', text: res.error || 'Xóa thất bại' });
+      }
+    } catch (e) {
+      setMessage({ type: 'error', text: 'Lỗi mạng' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredListings = filter === "all" ? listings : listings.filter((l) => l.status === filter);
 
@@ -155,6 +193,15 @@ export default function MyListingsSection() {
         </div>
       </div>
 
+      {message.text && (
+        <div className={`mx-6 mt-4 p-3 rounded-md text-sm pl-4 flex items-center justify-between ${
+          message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'
+        }`}>
+          <span>{message.text}</span>
+          <button onClick={() => setMessage({ type: '', text: '' })} className="hover:opacity-70"><X className="size-4" /></button>
+        </div>
+      )}
+
       {/* Listing Content */}
       <div className="p-4 md:p-6 overflow-visible relative z-10 min-h-[400px]">
         {loading ? (
@@ -195,16 +242,29 @@ export default function MyListingsSection() {
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <button className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-md transition-all" title="Sửa">
+                      <Link 
+                        href={`/bai-viet/${property.slug || property.id}`}
+                        className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-md transition-all" 
+                        title="Sửa"
+                      >
                         <Edit2 className="size-3.5" />
-                      </button>
-                      <button className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-all" title="Ẩn tin">
+                      </Link>
+                      <button 
+                         onClick={() => handleUpdateStatus(property.id, "Đã ẩn")}
+                         className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-all" 
+                         title="Ẩn tin">
                         <EyeOff className="size-3.5" />
                       </button>
-                      <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-all" title="Đã bán">
+                      <button 
+                         onClick={() => handleUpdateStatus(property.id, "Đã bán")}
+                         className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-all" 
+                         title="Đã bán">
                         <CheckCircle2 className="size-3.5" />
                       </button>
-                      <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all" title="Xóa">
+                      <button 
+                         onClick={() => handleDelete(property.id)}
+                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all" 
+                         title="Xóa">
                         <Trash2 className="size-3.5" />
                       </button>
                     </div>

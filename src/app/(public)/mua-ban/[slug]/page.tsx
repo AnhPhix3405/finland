@@ -45,6 +45,7 @@ interface Listing {
     name: string;
     hashtag: string;
   } | null;
+  listing_code?: string | null;
 }
 
 export default function MuaBanDetailPage() {
@@ -115,8 +116,10 @@ export default function MuaBanDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 py-10 md:py-16">
-      <div className="max-w-7xl mx-auto px-6 sm:px-10">
+    <>
+      <title>{listing ? `${listing.title} | ${listing.listing_code || ''} | Finland.vn` : 'Chi tiết bất động sản | Finland.vn'}</title>
+      <div className="min-h-screen bg-white dark:bg-slate-950 py-10 md:py-16">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10">
         <div className="mb-12">
           <button 
             onClick={() => router.back()}
@@ -134,7 +137,8 @@ export default function MuaBanDetailPage() {
           listing={listing}
           isDemo={false} 
         />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

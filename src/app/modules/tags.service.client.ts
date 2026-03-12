@@ -34,3 +34,33 @@ export async function getAllTagNamesAPI(query?: string): Promise<string[]> {
     return [];
   }
 }
+
+/**
+ * Process/sync tags for a listing by calling the API
+ */
+export async function processTagsForListingClient(tags: string[], listingId: string): Promise<Tag[]> {
+  try {
+    const response = await fetch('/api/tags', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tags,
+        listing_id: listingId
+      }),
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      return result.data || [];
+    } else {
+      console.error('Error processing tags from API:', result.error);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error calling processTagsForListingClient:', error);
+    return [];
+  }
+}

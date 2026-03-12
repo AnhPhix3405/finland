@@ -18,7 +18,11 @@ import {
   FileText,
   ArrowLeft,
   ChevronLeft,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  Home,
+  Tag,
+  Hash,
+  Activity
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -48,6 +52,8 @@ interface Listing {
   slug?: string | null;
   contact_name?: string | null;
   contact_phone?: string | null;
+  floor_count?: number | null;
+  bedroom_count?: number | null;
   brokers: {
     id: string;
     full_name: string;
@@ -72,6 +78,7 @@ interface Listing {
     name: string;
     hashtag: string;
   } | null;
+  listing_code?: string | null;
 }
 
 interface PropertyDetailProps {
@@ -142,8 +149,8 @@ export function PropertyDetail({ type, listing, isDemo = false }: PropertyDetail
           ? `${listing.address}, ${listing.ward}, ${listing.province}`
           : `${listing.ward}, ${listing.province}`,
         area: listing.area || 0,
-        bedrooms: 0,
-        floors: 0,
+        bedrooms: listing.bedroom_count || 0,
+        floors: listing.floor_count || 0,
         dimensions: formatDimensions(listing.width, listing.length),
         direction: listing.direction || "Không xác định",
         description: listing.description,
@@ -155,6 +162,8 @@ export function PropertyDetail({ type, listing, isDemo = false }: PropertyDetail
         tags: listing.tags || [],
         propertyType: listing.property_types?.name || "Bất động sản",
         transactionType: listing.transaction_types?.name || "Mua bán",
+        status: listing.status || "Đang hiển thị",
+        listingCode: listing.listing_code || "N/A",
         postedAt: null,
       };
     }
@@ -182,6 +191,8 @@ export function PropertyDetail({ type, listing, isDemo = false }: PropertyDetail
       tags: [],
       propertyType: "Nhà phố",
       transactionType: "Mua bán",
+      status: "Đang hiển thị",
+      listingCode: "FIN26123456",
       postedAt: "11/03/2026",
     };
   }, [type, isDemo, listing]);
@@ -380,6 +391,30 @@ export function PropertyDetail({ type, listing, isDemo = false }: PropertyDetail
                   <span className="text-sm font-semibold">{property.bedrooms} phòng</span>
                 </div>
               )}
+              <div className="flex items-center justify-between border-b border-slate-50 dark:border-slate-800 py-2">
+                <div className="flex items-center gap-2 text-slate-500 text-sm">
+                  <Home className="size-4" /> Loại hình
+                </div>
+                <span className="text-sm font-semibold">{property.propertyType}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-slate-50 dark:border-slate-800 py-2">
+                <div className="flex items-center gap-2 text-slate-500 text-sm">
+                  <Tag className="size-4" /> Nhu cầu
+                </div>
+                <span className="text-sm font-semibold">{property.transactionType}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-slate-50 dark:border-slate-800 py-2">
+                <div className="flex items-center gap-2 text-slate-500 text-sm">
+                  <Activity className="size-4" /> Tình trạng
+                </div>
+                <span className="text-sm font-semibold text-emerald-600">{property.status}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-slate-50 dark:border-slate-800 py-2">
+                <div className="flex items-center gap-2 text-slate-500 text-sm">
+                  <Hash className="size-4" /> Mã tin
+                </div>
+                <span className="text-sm font-semibold">{property.listingCode}</span>
+              </div>
             </div>
           </div>
 

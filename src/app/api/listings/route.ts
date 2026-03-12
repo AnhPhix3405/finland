@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     let whereClause: any = {
       // Public users only see approved listings
       status: {
-        notIn: ['Đang chờ duyệt', 'Đang ẩn', 'Bị từ chối']
+        notIn: ['Đang chờ duyệt', 'Đã ẩn', 'Bị từ chối']
       }
     };
     
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
         whereClause.AND = [
           {
             status: {
-              notIn: ['Đang chờ duyệt', 'Đang ẩn', 'Bị từ chối']
+              notIn: ['Đang chờ duyệt', 'Đã ẩn', 'Bị từ chối']
             }
           },
           {
@@ -259,7 +259,8 @@ export async function POST(request: NextRequest) {
       broker_id, title, description, slug: clientSlug, transaction_type_id,
       property_type_id, province, ward, address,
       area, width, length, price, direction, tags,
-      contact_name: rawContactName, contact_phone: rawContactPhone
+      contact_name: rawContactName, contact_phone: rawContactPhone,
+      floor_count, bedroom_count
     } = body;
 
     // Generate listing_code (e.g. FIN26000001)
@@ -381,6 +382,8 @@ export async function POST(request: NextRequest) {
         contact_name: finalContactName,
         contact_phone: finalContactPhone,
         listing_code: finalListingCode,
+        floor_count: floor_count ?? null,
+        bedroom_count: bedroom_count ?? null,
       },
       include: {
         brokers: {

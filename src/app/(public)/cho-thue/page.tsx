@@ -18,7 +18,7 @@ export default function ChoThuePage() {
   });
 
   const buildHashtags = (filters: FilterState) => {
-    const hashtags = ['chothue']; // Always include base hashtag
+    const hashtags = ['cho-thue']; // Always include base hashtag
     
     // Add property type hashtag if selected
     if (filters.propertyType && filters.propertyType !== '') {
