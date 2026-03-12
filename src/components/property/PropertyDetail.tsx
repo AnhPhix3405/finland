@@ -253,6 +253,11 @@ export function PropertyDetail({ type, listing, isDemo = false }: PropertyDetail
                   className="object-cover"
                   priority
                 />
+                {property.status && property.status !== "Đang hiển thị" && (
+                  <div className="absolute top-3 left-3 text-[11px] px-2.5 py-1.5 rounded-md font-bold bg-white/90 dark:bg-slate-900/80 text-emerald-600 dark:text-emerald-400 backdrop-blur-sm">
+                    {property.status}
+                  </div>
+                )}
                 <div className="absolute bottom-3 right-3 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm flex items-center gap-1.5">
                   <Maximize2 className="size-3" />
                   {selectedImageIndex + 1}/{attachments.length} Ảnh
@@ -402,12 +407,6 @@ export function PropertyDetail({ type, listing, isDemo = false }: PropertyDetail
                   <Tag className="size-4" /> Nhu cầu
                 </div>
                 <span className="text-sm font-semibold">{property.transactionType}</span>
-              </div>
-              <div className="flex items-center justify-between border-b border-slate-50 dark:border-slate-800 py-2">
-                <div className="flex items-center gap-2 text-slate-500 text-sm">
-                  <Activity className="size-4" /> Tình trạng
-                </div>
-                <span className="text-sm font-semibold text-emerald-600">{property.status}</span>
               </div>
               <div className="flex items-center justify-between border-b border-slate-50 dark:border-slate-800 py-2">
                 <div className="flex items-center gap-2 text-slate-500 text-sm">

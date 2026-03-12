@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PropertyCard } from "../../../../components/property/PropertyCard";
-import { PropertyFilter, FilterState } from "../../../../components/property/PropertyFilter";
-import { Pagination } from "../../../../components/shared/Pagination";
-import { PropertyDetail } from "../../../../components/property/PropertyDetail";
+import { PropertyCard } from "../../../../../components/property/PropertyCard";
+import { PropertyFilter, FilterState } from "../../../../../components/property/PropertyFilter";
+import { Pagination } from "../../../../../components/shared/Pagination";
+import { PropertyDetail } from "../../../../../components/property/PropertyDetail";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getListingsByHashtags } from "../../../modules/listings.service";
+import { getListingsByHashtags } from "../../../../modules/listings.service";
 
 interface MappedProperty {
   id: string;
@@ -62,9 +62,10 @@ interface Listing {
     name: string;
     hashtag: string;
   } | null;
+  listing_code?: string | null;
 }
 
-export default function ChoThueDetailOrFilterPage() {
+export default function MuaBanDetailOrFilterPage() {
   const router = useRouter();
   const params = useParams();
   const slug = params.slug as string;
@@ -114,7 +115,7 @@ export default function ChoThueDetailOrFilterPage() {
     const loadFilteredListings = async (filters: FilterState, page: number = 1) => {
       try {
         setLoading(true);
-        const hashtags = ['cho-thue', slug];
+        const hashtags = ['mua-ban', slug];
         const result = await getListingsByHashtags(hashtags, {
           page,
           limit: 12,
@@ -129,14 +130,17 @@ export default function ChoThueDetailOrFilterPage() {
           if (!price) return "Thỏa thuận";
           const numPrice = Number(price);
           
-          if (numPrice >= 1000000) {
+          if (numPrice >= 1000000000) {
+            const billions = numPrice / 1000000000;
+            return `${billions.toFixed(1)} Tỷ`;
+          } else if (numPrice >= 1000000) {
             const millions = numPrice / 1000000;
-            return `${millions.toFixed(1)} Triệu/tháng`;
+            return `${millions.toFixed(0)} Triệu`;
           } else if (numPrice >= 1000) {
             const thousands = numPrice / 1000;
-            return `${thousands.toFixed(0)} Nghìn/tháng`;
+            return `${thousands.toFixed(0)} Nghìn`;
           } else {
-            return `${numPrice.toLocaleString('vi-VN')} VND/tháng`;
+            return `${numPrice.toLocaleString('vi-VN')} VND`;
           }
         };
 
@@ -196,7 +200,7 @@ export default function ChoThueDetailOrFilterPage() {
   const handleFilterChange = (filters: FilterState) => {
     setCurrentFilters(filters);
     if (filters.propertyType && filters.propertyType !== slug) {
-      router.push(`/cho-thue/${filters.propertyType}`);
+      router.push(`/mua-ban/${filters.propertyType}`);
     }
   };
 
@@ -207,13 +211,13 @@ export default function ChoThueDetailOrFilterPage() {
   // Render property type filtered view
   if (isPropertyType) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-slate-100">
-            Bất động sản Cho Thuê toàn quốc
-          </h1>
-          <p className="text-slate-500 mt-2">
-            Tìm kiếm hàng ngàn tin đăng cho thuê bất động sản chính chủ, uy tín.
+          <h2 className="text-3xl font-black text-slate-900 dark:text-white leading-tight">
+            Bất động sản Mua Bán toàn quốc
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            Tìm kiếm ngôi nhà mơ ước của bạn tại Finland.vn
           </p>
         </div>
 
@@ -231,7 +235,7 @@ export default function ChoThueDetailOrFilterPage() {
             {properties.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {properties.map((property) => (
-                  <PropertyCard key={property.id} type="cho-thue" {...property} />
+                  <PropertyCard key={property.id} {...property} />
                 ))}
               </div>
             ) : (
@@ -278,7 +282,7 @@ export default function ChoThueDetailOrFilterPage() {
               {error || 'Không tìm thấy bài đăng'}
             </h1>
             <button 
-              onClick={() => router.push('/cho-thue')}
+              onClick={() => router.push('/mua-ban')}
               className="text-emerald-600 hover:text-emerald-700 font-medium"
             >
               ← Quay lại danh sách
@@ -290,26 +294,29 @@ export default function ChoThueDetailOrFilterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 py-10 md:py-16">
-      <div className="max-w-7xl mx-auto px-6 sm:px-10">
-        <div className="mb-12">
-          <button 
-            onClick={() => router.back()}
-            className="group inline-flex items-center gap-3 text-slate-400 hover:text-emerald-600 transition-all text-[10px] font-black uppercase tracking-[0.3em] w-fit"
-          >
-            <div className="p-2 rounded-full border border-slate-100 dark:border-slate-800 group-hover:border-emerald-500/30 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/10">
-              <ArrowLeft className="size-4 shrink-0" />
-            </div>
-            Quay lại danh sách
-          </button>
-        </div>
+    <>
+      <title>{listing ? `${listing.title} | ${listing.listing_code || ''} | Finland.vn` : 'Chi tiết bất động sản | Finland.vn'}</title>
+      <div className="min-h-screen bg-white dark:bg-slate-950 py-10 md:py-16">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10">
+          <div className="mb-12">
+            <button 
+              onClick={() => router.back()}
+              className="group inline-flex items-center gap-3 text-slate-400 hover:text-emerald-600 transition-all text-[10px] font-black uppercase tracking-[0.3em] w-fit"
+            >
+              <div className="p-2 rounded-full border border-slate-100 dark:border-slate-800 group-hover:border-emerald-500/30 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/10">
+                <ArrowLeft className="size-4 shrink-0" />
+              </div>
+              Quay lại danh sách
+            </button>
+          </div>
 
-        <PropertyDetail 
-          type="cho-thue" 
-          listing={listing}
-          isDemo={false} 
-        />
+          <PropertyDetail 
+            type="mua-ban" 
+            listing={listing}
+            isDemo={false} 
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

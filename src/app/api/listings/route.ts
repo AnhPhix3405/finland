@@ -74,15 +74,53 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const skip = (page - 1) * limit;
-    const hashtags = searchParams.get('hashtags'); // Get hashtags parameter
+    const hashtags = searchParams.get('hashtags');
+    const province = searchParams.get('province');
+    const ward = searchParams.get('ward');
+    const priceMin = searchParams.get('priceMin');
+    const priceMax = searchParams.get('priceMax');
+    const sortBy = searchParams.get('sortBy') || 'newest';
 
-    // Build where clause based on hashtags
+    // Build where clause based on filters
     let whereClause: any = {
-      // Public users only see approved listings
       status: {
         notIn: ['Đang chờ duyệt', 'Đã ẩn', 'Bị từ chối']
       }
     };
+    
+    // Collect all filter conditions to be ANDed together
+    const andConditions = [
+      {
+        status: {
+          notIn: ['Đang chờ duyệt', 'Đã ẩn', 'Bị từ chối']
+        }
+      }
+    ];
+    
+    // Add province filter
+    if (province && province !== 'all') {
+      andConditions.push({ province });
+      whereClause.province = province;
+    }
+
+    // Add ward filter
+    if (ward && ward !== 'all') {
+      andConditions.push({ ward });
+      whereClause.ward = ward;
+    }
+
+    // Add price filters
+    if (priceMin || priceMax) {
+      const priceFilter: any = {};
+      if (priceMin) {
+        priceFilter.gte = BigInt(priceMin);
+      }
+      if (priceMax) {
+        priceFilter.lte = BigInt(priceMax);
+      }
+      andConditions.push({ price: priceFilter });
+      whereClause.price = priceFilter;
+    }
     
     if (hashtags) {
       const hashtagList = hashtags.split(',').map(tag => tag.trim().toLowerCase());
@@ -90,7 +128,6 @@ export async function GET(request: NextRequest) {
       
       // Find matching IDs from different tables
       const [transactionTypes, propertyTypes, tags] = await Promise.all([
-        // Find transaction types with matching hashtags
         prisma.transaction_types.findMany({
           where: {
             hashtag: {
@@ -99,7 +136,6 @@ export async function GET(request: NextRequest) {
           },
           select: { id: true, hashtag: true }
         }),
-        // Find property types with matching hashtags  
         prisma.property_types.findMany({
           where: {
             hashtag: {
@@ -108,7 +144,6 @@ export async function GET(request: NextRequest) {
           },
           select: { id: true, hashtag: true }
         }),
-        // Find tags with matching slugs
         prisma.tags.findMany({
           where: {
             slug: {
@@ -123,27 +158,27 @@ export async function GET(request: NextRequest) {
       console.log('Found property types:', propertyTypes);
       console.log('Found tags:', tags);
 
-      // Build OR conditions based on found IDs
-      const orConditions = [];
-
+      // Add transaction type condition if found
       if (transactionTypes.length > 0) {
-        orConditions.push({
+        andConditions.push({
           transaction_type_id: {
             in: transactionTypes.map(t => t.id)
           }
         });
       }
 
+      // Add property type condition if found
       if (propertyTypes.length > 0) {
-        orConditions.push({
+        andConditions.push({
           property_type_id: {
             in: propertyTypes.map(p => p.id)
           }
         });
       }
 
+      // Add tags condition if found
       if (tags.length > 0) {
-        orConditions.push({
+        andConditions.push({
           tags: {
             some: {
               id: {
@@ -154,21 +189,21 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      if (orConditions.length > 0) {
-        whereClause.AND = [
-          {
-            status: {
-              notIn: ['Đang chờ duyệt', 'Đã ẩn', 'Bị từ chối']
-            }
-          },
-          {
-            OR: orConditions
-          }
-        ];
-        
-        // Remove the top-level status since it's in AND clause now
-        delete whereClause.status;
+      // Build final whereClause with all AND conditions
+      if (andConditions.length > 1) {
+        whereClause = {
+          AND: andConditions
+        };
       }
+    }
+
+    // Determine sort order
+    let orderBy: any = { id: 'desc' };
+    
+    if (sortBy === 'price_asc') {
+      orderBy = { price: 'asc' };
+    } else if (sortBy === 'price_desc') {
+      orderBy = { price: 'desc' };
     }
 
     const listings = await prisma.listings.findMany({
@@ -207,9 +242,7 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      orderBy: {
-        id: 'desc' // Order by creation (assuming newer UUID comes after)
-      }
+      orderBy: orderBy
     });
 
     const total = await prisma.listings.count({ where: whereClause });

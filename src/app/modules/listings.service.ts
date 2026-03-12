@@ -95,9 +95,14 @@ export async function getListings(params?: {
   page?: number;
   limit?: number;
   hashtags?: string[];
+  province?: string;
+  ward?: string;
+  priceMin?: string;
+  priceMax?: string;
+  sortBy?: string;
 }): Promise<{data: any[], pagination: any}> {
   try {
-    const { page = 1, limit = 10, hashtags } = params || {};
+    const { page = 1, limit = 10, hashtags, province, ward, priceMin, priceMax, sortBy } = params || {};
     
     // Build URL with query parameters
     const searchParams = new URLSearchParams({
@@ -107,6 +112,26 @@ export async function getListings(params?: {
     
     if (hashtags && hashtags.length > 0) {
       searchParams.set('hashtags', hashtags.join(','));
+    }
+
+    if (province) {
+      searchParams.set('province', province);
+    }
+
+    if (ward) {
+      searchParams.set('ward', ward);
+    }
+
+    if (priceMin) {
+      searchParams.set('priceMin', priceMin);
+    }
+
+    if (priceMax) {
+      searchParams.set('priceMax', priceMax);
+    }
+
+    if (sortBy) {
+      searchParams.set('sortBy', sortBy);
     }
     
     const response = await fetch(`/api/listings?${searchParams.toString()}`);
@@ -133,6 +158,11 @@ export async function getListings(params?: {
 export async function getListingsByHashtags(hashtags: string[], params?: {
   page?: number;
   limit?: number;
+  province?: string;
+  ward?: string;
+  priceMin?: string;
+  priceMax?: string;
+  sortBy?: string;
 }): Promise<{data: any[], pagination: any}> {
   return getListings({
     ...params,

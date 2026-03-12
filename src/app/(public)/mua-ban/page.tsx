@@ -5,8 +5,11 @@ import { PropertyCard } from "../../../components/property/PropertyCard";
 import { PropertyFilter, FilterState } from "../../../components/property/PropertyFilter";
 import { Pagination } from "../../../components/shared/Pagination";
 import { getListingsByHashtags } from "../../modules/listings.service";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function MuaBanPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentFilters, setCurrentFilters] = useState<FilterState>({});
@@ -52,7 +55,12 @@ export default function MuaBanPage() {
       const hashtags = buildHashtags(filters);
       const result = await getListingsByHashtags(hashtags, {
         page,
-        limit: pagination.limit
+        limit: pagination.limit,
+        province: filters.province,
+        ward: filters.ward,
+        priceMin: filters.priceMin,
+        priceMax: filters.priceMax,
+        sortBy: filters.sortBy
       });
       
       // Map API data to component expected format
@@ -66,7 +74,8 @@ export default function MuaBanPage() {
         tags: listing.tags?.map((tag: any) => tag.slug) || [],
         isPriority: false, // Can add logic later
         slug: listing.slug,
-        broker: listing.brokers
+        broker: listing.brokers,
+        status: listing.status
       }));
       
       setProperties(mappedProperties);
@@ -88,7 +97,13 @@ export default function MuaBanPage() {
 
   const handleFilterChange = (filters: FilterState) => {
     setCurrentFilters(filters);
-    loadListings(filters, 1); // Reset to page 1 when filtering
+    
+    // Navigate to property type page if selected
+    if (filters.propertyType && filters.propertyType !== '') {
+      router.push(`/mua-ban/${filters.propertyType}`);
+    } else {
+      loadListings(filters, 1);
+    }
   };
 
   const handlePageChange = (page: number) => {

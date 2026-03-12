@@ -12,7 +12,18 @@ export interface PropertyCardProps {
   isPriority?: boolean;
   slug?: string | null;
   type?: "mua-ban" | "cho-thue";
+  status?: string | null;
 }
+
+const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+  "Đang hiển thị": { label: "Đang hiển thị", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
+  "Đang chờ duyệt": { label: "Chờ duyệt", color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-900/20" },
+  "Đã ẩn": { label: "Đã ẩn", color: "text-slate-600", bg: "bg-slate-100 dark:bg-slate-800" },
+  "Hết hạn": { label: "Hết hạn", color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-900/20" },
+  "Đã bán": { label: "Đã bán", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
+  "Đã xong": { label: "Đã xong", color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/20" },
+  "Bị từ chối": { label: "Từ chối", color: "text-red-600", bg: "bg-red-50 dark:bg-red-900/20" },
+};
 
 export function PropertyCard({
   id,
@@ -25,6 +36,7 @@ export function PropertyCard({
   isPriority = false,
   slug,
   type = "mua-ban",
+  status = null,
 }: PropertyCardProps) {
   // Use slug for URL, fallback to id if no slug
   const basePath = type === "cho-thue" ? "/cho-thue" : "/mua-ban";
@@ -45,13 +57,18 @@ export function PropertyCard({
         >
           <Heart className="w-5 h-5 text-slate-400 group-hover:text-red-500 transition-colors" aria-hidden="true" />
         </button>
+        {status && status !== "Đang hiển thị" && (
+          <div className={`absolute top-2 left-2 text-[10px] px-2 py-1 rounded-sm font-bold ${statusConfig[status]?.bg || 'bg-slate-100'} ${statusConfig[status]?.color || 'text-slate-600'}`}>
+            {statusConfig[status]?.label || status}
+          </div>
+        )}
         {isPriority && (
           <div className="absolute bottom-2 left-2 bg-slate-900/70 text-white text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wide">
             Tin ưu tiên
           </div>
         )}
       </div>
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-4 flex flex-col grow">
         <div className="flex items-baseline gap-2 mb-1">
           <span className="text-xl font-black text-red-600">{price}</span>
           <span className="text-slate-500 font-semibold text-sm">
