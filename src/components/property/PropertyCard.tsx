@@ -1,5 +1,11 @@
+'use client';
+
 import { MapPin, Heart } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { toggleBookmark } from "@/src/app/modules/bookmarks.service";
+import { useNotificationStore } from "@/src/store/notificationStore";
+import { useAuthStore } from "@/src/store/authStore";
 
 export interface PropertyCardProps {
   id: string;
@@ -13,6 +19,8 @@ export interface PropertyCardProps {
   slug?: string | null;
   type?: "mua-ban" | "cho-thue";
   status?: string | null;
+  isBookmarked?: boolean;
+  onBookmarkToggle?: (isBookmarked: boolean) => void;
 }
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
@@ -37,10 +45,44 @@ export function PropertyCard({
   slug,
   type = "mua-ban",
   status = null,
+  isBookmarked = false,
+  onBookmarkToggle
 }: PropertyCardProps) {
+  const [bookmarked, setBookmarked] = useState(isBookmarked);
+  const [isLoading, setIsLoading] = useState(false);
+  const addToast = useNotificationStore((state) => state.addToast);
+  const accessToken = useAuthStore((state) => state.accessToken);
+
   // Use slug for URL, fallback to id if no slug
   const basePath = type === "cho-thue" ? "/cho-thue" : "/mua-ban";
   const detailUrl = slug ? `${basePath}/${slug}` : `${basePath}/${id}`;
+
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!accessToken) {
+      addToast('Bạn cần đăng nhập để lưu bài đăng', 'error');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await toggleBookmark(id);
+      if (result.success) {
+        const newBookmarkedState = result.data.bookmarked;
+        setBookmarked(newBookmarkedState);
+        addToast(result.data.message, 'success', 2000);
+        onBookmarkToggle?.(newBookmarkedState);
+      } else {
+        addToast(result.error, 'error');
+      }
+    } catch (error) {
+      addToast('Lỗi khi thao tác bookmark', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden rounded-sm hover:shadow-lg transition-shadow flex flex-col h-full">
@@ -52,10 +94,19 @@ export function PropertyCard({
           aria-label={title}
         />
         <button
-          className="absolute top-3 right-3 bg-white/80 dark:bg-slate-900/50 p-1.5 rounded-full hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-colors group"
-          aria-label="Lưu tin bất động sản"
+          onClick={handleBookmarkClick}
+          disabled={isLoading}
+          className="absolute top-3 right-3 bg-white/80 dark:bg-slate-900/50 p-1.5 rounded-full hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-colors group disabled:opacity-50"
+          aria-label={bookmarked ? "Bỏ lưu tin bất động sản" : "Lưu tin bất động sản"}
         >
-          <Heart className="w-5 h-5 text-slate-400 group-hover:text-red-500 transition-colors" aria-hidden="true" />
+          <Heart 
+            className={`w-5 h-5 transition-all ${
+              bookmarked 
+                ? 'fill-red-500 text-red-500' 
+                : 'text-slate-400 group-hover:text-red-500'
+            }`} 
+            aria-hidden="true" 
+          />
         </button>
         {status && status !== "Đang hiển thị" && (
           <div className={`absolute top-2 left-2 text-[10px] px-2 py-1 rounded-sm font-bold ${statusConfig[status]?.bg || 'bg-slate-100'} ${statusConfig[status]?.color || 'text-slate-600'}`}>

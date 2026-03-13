@@ -100,9 +100,10 @@ export async function getListings(params?: {
   priceMin?: string;
   priceMax?: string;
   sortBy?: string;
+  token?: string;
 }): Promise<{data: any[], pagination: any}> {
   try {
-    const { page = 1, limit = 10, hashtags, province, ward, priceMin, priceMax, sortBy } = params || {};
+    const { page = 1, limit = 10, hashtags, province, ward, priceMin, priceMax, sortBy, token } = params || {};
     
     // Build URL with query parameters
     const searchParams = new URLSearchParams({
@@ -134,7 +135,18 @@ export async function getListings(params?: {
       searchParams.set('sortBy', sortBy);
     }
     
-    const response = await fetch(`/api/listings?${searchParams.toString()}`);
+    // Build fetch options with Authorization header if token is provided
+    const fetchOptions: RequestInit = {};
+    if (token) {
+      fetchOptions.headers = {
+        'Authorization': `Bearer ${token}`
+      };
+      console.log('📡 getListings - Sending with Authorization header');
+    } else {
+      console.log('📡 getListings - No token provided, sending without Authorization');
+    }
+    
+    const response = await fetch(`/api/listings?${searchParams.toString()}`, fetchOptions);
     const result = await response.json();
     
     return {

@@ -8,6 +8,7 @@ import { PropertyDetail } from "../../../../../../components/property/PropertyDe
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getListingsByHashtags } from "../../../../../modules/listings.service";
+import { useAuthStore } from "@/src/store/authStore";
 
 interface MappedProperty {
   id: string;
@@ -68,6 +69,8 @@ export default function ChoThueDetailOrFilterPage() {
   const router = useRouter();
   const params = useParams();
   const slug = params.slug as string;
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
   
   // State for property types from API
   const [propertyTypes, setPropertyTypes] = useState<Array<{ id: string; name: string; hashtag: string }>>([]);
@@ -109,7 +112,7 @@ export default function ChoThueDetailOrFilterPage() {
 
   // Handle property type filtered view
   useEffect(() => {
-    if (!isPropertyType) return;
+    if (!isPropertyType || !isHydrated) return;
 
     const loadFilteredListings = async (filters: FilterState, page: number = 1) => {
       try {
@@ -122,7 +125,8 @@ export default function ChoThueDetailOrFilterPage() {
           ward: filters.ward,
           priceMin: filters.priceMin,
           priceMax: filters.priceMax,
-          sortBy: filters.sortBy
+          sortBy: filters.sortBy,
+          token: accessToken || undefined
         });
 
         const formatPrice = (price: string | number) => {
@@ -164,16 +168,20 @@ export default function ChoThueDetailOrFilterPage() {
     };
 
     loadFilteredListings(currentFilters);
-  }, [isPropertyType, slug, currentFilters]);
+  }, [isPropertyType, slug, currentFilters, isHydrated, accessToken]);
 
   // Handle individual listing detail view
   useEffect(() => {
-    if (isPropertyType) return;
+    if (isPropertyType || !isHydrated) return;
 
     const fetchListingDetail = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/listings/${slug}`);
+        const headers: HeadersInit = {};
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+        const response = await fetch(`/api/listings/${slug}`, { headers });
         const result = await response.json();
         
         if (result.success) {
@@ -190,7 +198,7 @@ export default function ChoThueDetailOrFilterPage() {
     };
 
     fetchListingDetail();
-  }, [slug, isPropertyType]);
+  }, [slug, isPropertyType, isHydrated, accessToken]);
 
   // Handle filter change for property type view
   const handleFilterChange = (filters: FilterState) => {

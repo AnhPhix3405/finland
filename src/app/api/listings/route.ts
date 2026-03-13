@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { processTagsForListing } from '@/src/app/modules/tags.service.server';
+import { verifyToken } from '@/src/app/modules/auth/jwt';
 
 // Helper function to handle BigInt serialization
 function serializeData(data: any) {
@@ -80,6 +81,39 @@ export async function GET(request: NextRequest) {
     const priceMin = searchParams.get('priceMin');
     const priceMax = searchParams.get('priceMax');
     const sortBy = searchParams.get('sortBy') || 'newest';
+
+    // Get current broker from token if logged in
+    let currentBrokerId: string | null = null;
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    
+    console.log('GET /api/listings - Auth Check:', {
+      authHeader: authHeader ? `Bearer ${authHeader.substring(0, 20)}...` : 'NO HEADER',
+      hasToken: !!token,
+      tokenLength: token?.length || 0
+    });
+    
+    if (token) {
+      try {
+        const payload = await verifyToken(token);
+        console.log('Token verification result:', {
+          payloadKeys: Object.keys(payload || {}),
+          payload: payload
+        });
+        
+        if (payload && (payload as any).id) {
+          currentBrokerId = (payload as any).id as string;
+          console.log('✓ currentBrokerId extracted:', currentBrokerId);
+        } else {
+          console.log('✗ No id in payload');
+        }
+      } catch (err) {
+        // Token invalid or expired, continue without broker context
+        console.error('✗ Token verification failed:', err instanceof Error ? err.message : String(err));
+      }
+    } else {
+      console.log('✗ No token provided in Authorization header');
+    }
 
     // Build where clause based on filters
     let whereClause: any = {
@@ -249,9 +283,55 @@ export async function GET(request: NextRequest) {
     
     console.log(`Found ${listings.length} listings with whereClause:`, JSON.stringify(whereClause, null, 2));
 
+    // Fetch bookmarks for current broker if logged in
+    let bookmarkMap: Record<string, boolean> = {};
+    if (currentBrokerId) {
+      console.log('Searching bookmarks for broker:', currentBrokerId);
+      
+      const bookmarks = await prisma.bookmarks.findMany({
+        where: {
+          broker_id: currentBrokerId,
+          listing_id: {
+            in: listings.map(l => l.id)
+          }
+        },
+        select: {
+          listing_id: true
+        }
+      });
+
+      console.log('Bookmarks query result:', {
+        where: {
+          broker_id: currentBrokerId,
+          listing_ids: listings.map(l => l.id)
+        },
+        found: bookmarks.length,
+        bookmarks: bookmarks
+      });
+
+      bookmarkMap = Object.fromEntries(
+        bookmarks.map(b => [b.listing_id, true])
+      );
+      
+      console.log('GET /api/listings - Bookmarks found:', {
+        brokerId: currentBrokerId,
+        totalListings: listings.length,
+        bookmarkedCount: bookmarks.length,
+        bookmarkMap: bookmarkMap
+      });
+    } else {
+      console.log('GET /api/listings - No broker logged in (currentBrokerId is null)');
+    }
+
+    // Add is_bookmarked to each listing
+    const listingsWithBookmarks = listings.map(listing => ({
+      ...listing,
+      is_bookmarked: bookmarkMap[listing.id] || false
+    }));
+
     return NextResponse.json(serializeData({
       success: true,
-      data: listings,
+      data: listingsWithBookmarks,
       pagination: {
         page,
         limit,

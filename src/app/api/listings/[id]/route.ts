@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { verifyToken } from '@/src/app/modules/auth/jwt';
 
 // Helper function to handle BigInt serialization
 function serializeData(data: any) {
@@ -23,6 +24,23 @@ export async function GET(
         { success: false, error: 'Listing ID or slug is required' },
         { status: 400 }
       );
+    }
+
+    // Get current broker from token if logged in
+    let currentBrokerId: string | null = null;
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    
+    if (token) {
+      try {
+        const payload = await verifyToken(token);
+        if (payload && (payload as any).id) {
+          currentBrokerId = (payload as any).id as string;
+        }
+      } catch (err) {
+        // Token invalid or expired, continue without broker context
+        console.error('Token verification failed:', err);
+      }
     }
 
     // Try to find by slug first, then by ID
@@ -127,9 +145,32 @@ export async function GET(
       );
     }
 
+    // Check if current broker has bookmarked this listing
+    let isBookmarked = false;
+    if (currentBrokerId) {
+      const bookmark = await prisma.bookmarks.findFirst({
+        where: {
+          broker_id: currentBrokerId,
+          listing_id: listing.id
+        }
+      });
+      isBookmarked = !!bookmark;
+      
+      console.log('GET /api/listings/[id] - Checking bookmark:', {
+        brokerId: currentBrokerId,
+        listingId: listing.id,
+        isBookmarked: isBookmarked
+      });
+    } else {
+      console.log('GET /api/listings/[id] - No broker logged in, isBookmarked:', false);
+    }
+
     return NextResponse.json(serializeData({
       success: true,
-      data: listing
+      data: {
+        ...listing,
+        is_bookmarked: isBookmarked
+      }
     }));
 
   } catch (error) {
@@ -286,4 +327,4 @@ export async function PATCH(
     );
   }
 }
-
+

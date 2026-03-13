@@ -1,6 +1,7 @@
 import Header from "@/src/components/layout/header";
 import Footer from "@/src/components/layout/Footer";
 import { ProjectProvider } from "@/src/context/ProjectContext";
+import { NotificationWrapper } from "@/src/components/layout/NotificationWrapper";
 
 export default function PublicLayout({
   children,
@@ -14,6 +15,7 @@ export default function PublicLayout({
         <main className="flex-grow">
           {children}
         </main>
+        <NotificationWrapper />
         <Footer />
       </div>
     </ProjectProvider>

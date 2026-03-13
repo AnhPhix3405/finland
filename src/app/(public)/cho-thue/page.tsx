@@ -6,6 +6,7 @@ import { PropertyCard } from "../../../components/property/PropertyCard";
 import { PropertyFilter, FilterState } from "../../../components/property/PropertyFilter";
 import { Pagination } from "../../../components/shared/Pagination";
 import { getListingsByHashtags } from "../../modules/listings.service";
+import { useAuthStore } from "@/src/store/authStore";
 
 export default function ChoThuePage() {
   const router = useRouter();
@@ -13,12 +14,15 @@ export default function ChoThuePage() {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentFilters, setCurrentFilters] = useState<FilterState>({});
+  const [bookmarkedMap, setBookmarkedMap] = useState<Record<string, boolean>>({});
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
     total: 0,
     totalPages: 0
   });
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
 
   const buildHashtags = (filters: FilterState) => {
     const hashtags = ['cho-thue']; // Always include base hashtag
@@ -58,7 +62,8 @@ export default function ChoThuePage() {
         ward: filters.ward,
         priceMin: filters.priceMin,
         priceMax: filters.priceMax,
-        sortBy: filters.sortBy
+        sortBy: filters.sortBy,
+        token: accessToken || undefined
       });
       
       // Map API data to component expected format
@@ -73,11 +78,28 @@ export default function ChoThuePage() {
         isPriority: false, // Can add logic later
         slug: listing.slug,
         broker: listing.brokers,
-        status: listing.status
+        status: listing.status,
+        is_bookmarked: listing.is_bookmarked || false
       }));
       
       setProperties(mappedProperties);
       setPagination({...result.pagination});
+      
+      // Log response for debugging
+      console.log('API Response (cho-thue):', {
+        totalListings: result.data.length,
+        sample: result.data[0],
+        allIsBookmarked: result.data.map((l: any) => ({ id: l.id, is_bookmarked: l.is_bookmarked }))
+      });
+      
+      // Initialize bookmarkedMap from API response
+      const initialBookmarkMap: Record<string, boolean> = {};
+      result.data.forEach((listing: any) => {
+        if (listing.is_bookmarked) {
+          initialBookmarkMap[listing.id] = true;
+        }
+      });
+      setBookmarkedMap(initialBookmarkMap);
     } catch (error) {
       console.error('Error loading listings:', error);
       setProperties([]);
@@ -88,10 +110,15 @@ export default function ChoThuePage() {
 
   // Load initial listings with "chothue" hashtag
   useEffect(() => {
+    if (!isHydrated) {
+      console.log('⏳ Waiting for authStore hydration... (cho-thue page)');
+      return;
+    }
+    
     const initialFilters = {};
     setCurrentFilters(initialFilters);
     loadListings(initialFilters);
-  }, []);
+  }, [isHydrated]);
 
   const handleFilterChange = (filters: FilterState) => {
     setCurrentFilters(filters);
@@ -136,7 +163,18 @@ export default function ChoThuePage() {
           {properties.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {properties.map((property) => (
-                <PropertyCard key={property.id} type="cho-thue" {...property} />
+                <PropertyCard 
+                  key={property.id} 
+                  type="cho-thue" 
+                  {...property}
+                  isBookmarked={bookmarkedMap[property.id] || false}
+                  onBookmarkToggle={(isBookmarked) => {
+                    setBookmarkedMap(prev => ({
+                      ...prev,
+                      [property.id]: isBookmarked
+                    }));
+                  }}
+                />
               ))}
             </div>
           ) : (

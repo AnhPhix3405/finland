@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
         const { password_hash: _, ...safeBroker } = newBroker;
 
         // Auto-login after successful registration
-        const accessToken = await signAccessToken(safeBroker);
-        const refreshToken = await signRefreshToken(safeBroker);
+        const accessToken = await signAccessToken({ ...safeBroker, role: 'broker' });
+        const refreshToken = await signRefreshToken({ ...safeBroker, role: 'broker' });
 
         const response = NextResponse.json({
             success: true,

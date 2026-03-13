@@ -6,6 +6,7 @@ import { PropertyFilter, FilterState } from "../../../components/property/Proper
 import { Pagination } from "../../../components/shared/Pagination";
 import { getListingsByHashtags } from "../../modules/listings.service";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuthStore } from "@/src/store/authStore";
 
 export default function MuaBanPage() {
   const router = useRouter();
@@ -13,12 +14,15 @@ export default function MuaBanPage() {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentFilters, setCurrentFilters] = useState<FilterState>({});
+  const [bookmarkedMap, setBookmarkedMap] = useState<Record<string, boolean>>({});
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
     total: 0,
     totalPages: 0
   });
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
 
   const buildHashtags = (filters: FilterState) => {
     const hashtags = ['mua-ban']; // Always include base hashtag
@@ -53,6 +57,13 @@ export default function MuaBanPage() {
     try {
       setLoading(true);
       const hashtags = buildHashtags(filters);
+      
+      console.log('📤 loadListings - Sending request with:', {
+        hashtags,
+        accessToken: accessToken ? `${accessToken.substring(0, 20)}...` : 'NO TOKEN',
+        filters
+      });
+      
       const result = await getListingsByHashtags(hashtags, {
         page,
         limit: pagination.limit,
@@ -60,7 +71,8 @@ export default function MuaBanPage() {
         ward: filters.ward,
         priceMin: filters.priceMin,
         priceMax: filters.priceMax,
-        sortBy: filters.sortBy
+        sortBy: filters.sortBy,
+        token: accessToken || undefined
       });
       
       // Map API data to component expected format
@@ -75,11 +87,28 @@ export default function MuaBanPage() {
         isPriority: false, // Can add logic later
         slug: listing.slug,
         broker: listing.brokers,
-        status: listing.status
+        status: listing.status,
+        is_bookmarked: listing.is_bookmarked || false
       }));
       
       setProperties(mappedProperties);
       setPagination({...result.pagination});
+      
+      // Log response for debugging
+      console.log('API Response (mua-ban):', {
+        totalListings: result.data.length,
+        sample: result.data[0],
+        allIsBookmarked: result.data.map((l: any) => ({ id: l.id, is_bookmarked: l.is_bookmarked }))
+      });
+      
+      // Initialize bookmarkedMap from API response
+      const initialBookmarkMap: Record<string, boolean> = {};
+      result.data.forEach((listing: any) => {
+        if (listing.is_bookmarked) {
+          initialBookmarkMap[listing.id] = true;
+        }
+      });
+      setBookmarkedMap(initialBookmarkMap);
     } catch (error) {
       console.error('Error loading listings:', error);
       setProperties([]);
@@ -90,10 +119,15 @@ export default function MuaBanPage() {
 
   // Load initial listings with "muaban" hashtag
   useEffect(() => {
+    if (!isHydrated) {
+      console.log('⏳ Waiting for authStore hydration... (mua-ban page)');
+      return;
+    }
+    
     const initialFilters = {};
     setCurrentFilters(initialFilters);
     loadListings(initialFilters);
-  }, []);
+  }, [isHydrated]);
 
   const handleFilterChange = (filters: FilterState) => {
     setCurrentFilters(filters);
@@ -138,7 +172,17 @@ export default function MuaBanPage() {
           {properties.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {properties.map((property) => (
-                <PropertyCard key={property.id} {...property} />
+                <PropertyCard 
+                  key={property.id} 
+                  {...property}
+                  isBookmarked={bookmarkedMap[property.id] || false}
+                  onBookmarkToggle={(isBookmarked) => {
+                    setBookmarkedMap(prev => ({
+                      ...prev,
+                      [property.id]: isBookmarked
+                    }));
+                  }}
+                />
               ))}
             </div>
           ) : (

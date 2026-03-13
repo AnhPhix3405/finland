@@ -28,6 +28,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { toggleBookmark } from "@/src/app/modules/bookmarks.service";
+import { useNotificationStore } from "@/src/store/notificationStore";
+import { useAuthStore } from "@/src/store/authStore";
 
 interface Attachment {
   id: string;
@@ -92,6 +95,10 @@ export function PropertyDetail({ type, listing, isDemo = false }: PropertyDetail
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [startIndex, setStartIndex] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isLoadingBookmark, setIsLoadingBookmark] = useState(false);
+  const addToast = useNotificationStore((state) => state.addToast);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   // Fetch real attachments for the listing
   useEffect(() => {
@@ -108,7 +115,40 @@ export function PropertyDetail({ type, listing, isDemo = false }: PropertyDetail
       }
     };
     fetchAttachments();
+
+    // Check if listing has is_bookmarked field from API
+    if (listing.is_bookmarked) {
+      setIsBookmarked(true);
+      console.log('PropertyDetail - listing has is_bookmarked:', listing.is_bookmarked);
+    } else {
+      console.log('PropertyDetail - listing is_bookmarked:', listing.is_bookmarked);
+    }
   }, [listing?.id]);
+
+  const handleBookmarkClick = async () => {
+    if (!accessToken) {
+      addToast('Bạn cần đăng nhập để lưu bài đăng', 'error');
+      return;
+    }
+
+    if (!listing?.id) return;
+
+    setIsLoadingBookmark(true);
+    try {
+      const result = await toggleBookmark(listing.id);
+      if (result.success) {
+        const newBookmarkedState = result.data.bookmarked;
+        setIsBookmarked(newBookmarkedState);
+        addToast(result.data.message, 'success', 2000);
+      } else {
+        addToast(result.error, 'error');
+      }
+    } catch (error) {
+      addToast('Lỗi khi thao tác bookmark', 'error');
+    } finally {
+      setIsLoadingBookmark(false);
+    }
+  };
 
   const scrollImages = (direction: "left" | "right") => {
     const thumbCount = 4;
@@ -347,8 +387,18 @@ export function PropertyDetail({ type, listing, isDemo = false }: PropertyDetail
                 <button className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                   <Share2 className="size-5 text-slate-600" />
                 </button>
-                <button className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <Heart className="size-5 text-slate-600" />
+                <button 
+                  onClick={handleBookmarkClick}
+                  disabled={isLoadingBookmark}
+                  className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                >
+                  <Heart 
+                    className={`size-5 transition-all ${
+                      isBookmarked 
+                        ? 'fill-red-500 text-red-500' 
+                        : 'text-slate-600'
+                    }`} 
+                  />
                 </button>
               </div>
             </div>

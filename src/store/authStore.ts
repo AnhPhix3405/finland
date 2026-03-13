@@ -4,9 +4,11 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 interface AuthState {
     accessToken: string | null;
     isAuthenticated: boolean;
+    isHydrated: boolean;
     setAuth: (accessToken: string) => void;
     clearAuth: () => void;
     updateAccessToken: (accessToken: string) => void;
+    setHydrated: (hydrated: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -14,6 +16,7 @@ export const useAuthStore = create<AuthState>()(
         (set) => ({
             accessToken: null,
             isAuthenticated: false,
+            isHydrated: false,
             setAuth: (accessToken) =>
                 set({
                     accessToken,
@@ -28,10 +31,25 @@ export const useAuthStore = create<AuthState>()(
                 set({
                     accessToken
                 }),
+            setHydrated: (hydrated) =>
+                set({
+                    isHydrated: hydrated
+                })
         }),
         {
             name: 'auth-storage',
             storage: createJSONStorage(() => localStorage),
+            onRehydrateStorage: () => (state) => {
+                // Called after hydration is complete
+                if (state) {
+                    state.isHydrated = true;
+                    console.log('✓ AuthStore hydrated from localStorage:', {
+                        hasToken: !!state.accessToken,
+                        isAuthenticated: state.isAuthenticated,
+                        isHydrated: true
+                    });
+                }
+            }
         }
     )
 );
