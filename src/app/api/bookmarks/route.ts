@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { verifyToken } from '@/src/app/modules/auth/jwt';
 
+// Helper function to handle BigInt serialization
+function serializeData(data: any) {
+  return JSON.parse(
+    JSON.stringify(data, (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    )
+  );
+}
+
 // POST - Create or toggle bookmark
 export async function POST(request: NextRequest) {
   try {
@@ -114,7 +123,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET - Check if listings are bookmarked by current broker
+// GET - Get bookmarked listings or check if listings are bookmarked
 export async function GET(request: NextRequest) {
   try {
     // Check authentication token
@@ -136,43 +145,113 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
+
     const { searchParams } = new URL(request.url);
     const listing_ids = searchParams.get('listing_ids')?.split(',') || [];
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const skip = (page - 1) * limit;
 
-    if (listing_ids.length === 0) {
+    const brokerId = (payload as any).id as string;
+
+    // If listing_ids provided, check which are bookmarked
+    if (listing_ids.length > 0) {
+      const bookmarks = await prisma.bookmarks.findMany({
+        where: {
+          broker_id: brokerId,
+          listing_id: {
+            in: listing_ids
+          }
+        },
+        select: {
+          listing_id: true
+        }
+      });
+
+      const bookmarkedMap = Object.fromEntries(
+        bookmarks.map(b => [b.listing_id, true])
+      );
+
       return NextResponse.json({
         success: true,
-        data: {}
+        data: bookmarkedMap
       });
     }
 
-    // Get all bookmarks for these listings by current broker
-    const bookmarks = await prisma.bookmarks.findMany({
+    // Otherwise, get all bookmarked listings for current broker
+    console.log('GET /api/bookmarks - Fetching all bookmarks for broker:', {
+      brokerId,
+      page,
+      limit,
+      skip
+    });
+
+    // Get total count
+    const totalBookmarks = await prisma.bookmarks.count({
       where: {
-        broker_id: (payload as any).id as string,
-        listing_id: {
-          in: listing_ids
-        }
-      },
-      select: {
-        listing_id: true
+        broker_id: brokerId
       }
     });
 
-    // Create a map of bookmarked listing IDs
-    const bookmarkedMap = Object.fromEntries(
-      bookmarks.map(b => [b.listing_id, true])
-    );
+    // Get paginated bookmarks with listing details
+    const bookmarks = await prisma.bookmarks.findMany({
+      where: {
+        broker_id: brokerId
+      },
+      include: {
+        listings: {
+          include: {
+            brokers: {
+              select: {
+                id: true,
+                full_name: true,
+                phone: true,
+                email: true,
+                avatar_url: true
+              }
+            },
+            tags: {
+              select: {
+                id: true,
+                name: true,
+                slug: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        created_at: 'desc'
+      },
+      take: limit,
+      skip: skip
+    });
+
+    // Format response
+    const data = bookmarks.map(bookmark => ({
+      bookmarkId: bookmark.id,
+      ...bookmark.listings,
+      createdAt: bookmark.created_at
+    }));
+
+    // Serialize BigInt values
+    const serializedData = serializeData(data);
 
     return NextResponse.json({
       success: true,
-      data: bookmarkedMap
+      data: serializedData,
+      pagination: {
+        page,
+        limit,
+        total: totalBookmarks,
+        totalPages: Math.ceil(totalBookmarks / limit)
+      }
     });
 
   } catch (error) {
-    console.error('Error checking bookmarks:', error);
+    console.error('Error fetching bookmarks:', error);
     return NextResponse.json(
-      { success: false, error: 'Lỗi khi kiểm tra bookmark' },
+      { success: false, error: 'Lỗi khi tải dữ liệu bookmark' },
       { status: 500 }
     );
   }
