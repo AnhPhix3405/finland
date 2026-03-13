@@ -116,14 +116,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause based on filters
-    let whereClause: any = {
-      status: {
-        notIn: ['Đang chờ duyệt', 'Đã ẩn', 'Bị từ chối']
-      }
-    };
-    
-    // Collect all filter conditions to be ANDed together
-    const andConditions = [
+    const andConditions: any[] = [
       {
         status: {
           notIn: ['Đang chờ duyệt', 'Đã ẩn', 'Bị từ chối']
@@ -134,26 +127,37 @@ export async function GET(request: NextRequest) {
     // Add province filter
     if (province && province !== 'all') {
       andConditions.push({ province });
-      whereClause.province = province;
+      console.log('Added province filter:', province);
     }
 
     // Add ward filter
     if (ward && ward !== 'all') {
       andConditions.push({ ward });
-      whereClause.ward = ward;
+      console.log('Added ward filter:', ward);
     }
 
     // Add price filters
     if (priceMin || priceMax) {
       const priceFilter: any = {};
       if (priceMin) {
-        priceFilter.gte = BigInt(priceMin);
+        try {
+          priceFilter.gte = BigInt(priceMin);
+          console.log('Added priceMin filter:', priceMin);
+        } catch (e) {
+          console.error('Invalid priceMin value:', priceMin);
+        }
       }
       if (priceMax) {
-        priceFilter.lte = BigInt(priceMax);
+        try {
+          priceFilter.lte = BigInt(priceMax);
+          console.log('Added priceMax filter:', priceMax);
+        } catch (e) {
+          console.error('Invalid priceMax value:', priceMax);
+        }
       }
-      andConditions.push({ price: priceFilter });
-      whereClause.price = priceFilter;
+      if (Object.keys(priceFilter).length > 0) {
+        andConditions.push({ price: priceFilter });
+      }
     }
     
     if (hashtags) {
@@ -222,13 +226,16 @@ export async function GET(request: NextRequest) {
           }
         });
       }
+    }
 
-      // Build final whereClause with all AND conditions
-      if (andConditions.length > 1) {
-        whereClause = {
-          AND: andConditions
-        };
-      }
+    // Build final whereClause from andConditions
+    let whereClause: any;
+    if (andConditions.length === 1) {
+      whereClause = andConditions[0];
+    } else {
+      whereClause = {
+        AND: andConditions
+      };
     }
 
     // Determine sort order
@@ -281,7 +288,20 @@ export async function GET(request: NextRequest) {
 
     const total = await prisma.listings.count({ where: whereClause });
     
-    console.log(`Found ${listings.length} listings with whereClause:`, JSON.stringify(whereClause, null, 2));
+    // Log without BigInt values to avoid serialization error
+    const logWhereClause = JSON.parse(
+      JSON.stringify(whereClause, (key, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+      )
+    );
+    console.log(`Found ${listings.length} listings with filters:`, {
+      province,
+      ward,
+      priceMin,
+      priceMax,
+      hashtags,
+      sortBy
+    });
 
     // Fetch bookmarks for current broker if logged in
     let bookmarkMap: Record<string, boolean> = {};
