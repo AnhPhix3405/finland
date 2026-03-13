@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, ChevronRight, Share2, Clock, Tag, MessageSquare } from 'lucide-react';
-import { marked } from 'marked';
+import MarkdownIt from 'markdown-it';
 
 interface NewsArticle {
   id: string;
@@ -20,6 +20,8 @@ interface NewsArticle {
     slug: string;
   }>;
 }
+
+const mdParser = new MarkdownIt();
 
 export default function NewsDetailPage() {
   const params = useParams();
@@ -173,7 +175,7 @@ export default function NewsDetailPage() {
           prose-blockquote:border-emerald-500 prose-blockquote:bg-emerald-50 dark:prose-blockquote:bg-emerald-900/10 
           prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg
           prose-img:rounded-xl"
-          dangerouslySetInnerHTML={{ __html: news.content }}
+          dangerouslySetInnerHTML={{ __html: mdParser.render(news.content) }}
         />
 
         {/* Post Tags */}

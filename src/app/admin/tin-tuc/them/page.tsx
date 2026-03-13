@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from "@/src/store/authStore";
 import { uploadNewsThumbnail } from "@/src/app/modules/upload.service";
-import TipTap from '@/src/components/ui/TipTap';
+import RichTextEditor from '@/src/components/ui/RichTextEditor';
 
 interface Tag {
   id: string;
@@ -221,7 +221,7 @@ export default function AdminAddNewsPage() {
               </label>
               {/* Rich Text Editor */}
               <div className="prose-container">
-                <TipTap 
+                <RichTextEditor 
                   value={content} 
                   onChange={setContent} 
                   placeholder="Bắt đầu viết nội dung tại đây..." 
