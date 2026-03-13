@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PropertyCard } from "../../../../../../components/property/PropertyCard";
-import { PropertyFilter, FilterState } from "../../../../../../components/property/PropertyFilter";
-import { Pagination } from "../../../../../../components/shared/Pagination";
-import { PropertyDetail } from "../../../../../../components/property/PropertyDetail";
-import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { getListingsByHashtags } from "../../../../../modules/listings.service";
+import { PropertyCard } from "@/src/components/property/PropertyCard";
+import { PropertyFilter, FilterState} from "@/src/components/property/PropertyFilter";
 import { useAuthStore } from "@/src/store/authStore";
+import { useParams, useRouter } from "next/navigation";
+import { getListingsByHashtags } from "@/src/app/modules/listings.service";
+import { Pagination } from "@/src/components/shared/Pagination";
+import { ArrowLeft } from "lucide-react";
+import { PropertyDetail } from "@/src/components/property/PropertyDetail";
 
 interface MappedProperty {
   id: string;

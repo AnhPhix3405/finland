@@ -55,7 +55,7 @@ export function PropertyCard({
 
   // Use slug for URL, fallback to id if no slug
   const basePath = type === "cho-thue" ? "/cho-thue" : "/mua-ban";
-  const detailUrl = slug ? `${basePath}/${slug}` : `${basePath}/${id}`;
+  const detailUrl = slug ? `${basePath}/bai-dang/${slug}` : `${basePath}/bai-dang/${id}`;
 
   const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.preventDefault();

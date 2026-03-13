@@ -216,6 +216,19 @@ export async function GET(request: NextRequest) {
                 name: true,
                 slug: true
               }
+            },
+            transaction_types: {
+              select: {
+                id: true,
+                name: true,
+                hashtag: true
+              }
+            },
+            property_types: {
+              select: {
+                id: true,
+                name: true
+              }
             }
           }
         }
@@ -225,6 +238,16 @@ export async function GET(request: NextRequest) {
       },
       take: limit,
       skip: skip
+    });
+
+    console.log('GET /api/bookmarks - Raw bookmarks from DB:', {
+      count: bookmarks.length,
+      firstItem: bookmarks[0] ? {
+        id: bookmarks[0]?.listings?.id,
+        title: bookmarks[0]?.listings?.title,
+        transaction_types: bookmarks[0]?.listings?.transaction_types,
+        property_types: bookmarks[0]?.listings?.property_types
+      } : null
     });
 
     // Format response

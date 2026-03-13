@@ -1,34 +1,38 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { PropertyCard } from "../../../components/property/PropertyCard";
-import { PropertyFilter, FilterState } from "../../../components/property/PropertyFilter";
-import { Pagination } from "../../../components/shared/Pagination";
-import { getListingsByHashtags } from "../../modules/listings.service";
-import { useAuthStore } from "@/src/store/authStore";
+import { PropertyCard } from "../../../../../../components/property/PropertyCard";
+import { PropertyFilter, FilterState } from "../../../../../../components/property/PropertyFilter";
+import { Pagination } from "../../../../../../components/shared/Pagination";
+import { getListingsByHashtags } from "../../../../../modules/listings.service";
+import { useParams, useRouter } from "next/navigation";
 
-export default function ChoThuePage() {
+export default function ChoThuePropertyTypePage() {
+  const params = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const propertyType = params.propertyType as string;
+
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentFilters, setCurrentFilters] = useState<FilterState>({});
-  const [bookmarkedMap, setBookmarkedMap] = useState<Record<string, boolean>>({});
+  const [currentFilters, setCurrentFilters] = useState<FilterState>({
+    propertyType: propertyType || ''
+  });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
     total: 0,
     totalPages: 0
   });
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const isHydrated = useAuthStore((state) => state.isHydrated);
 
   const buildHashtags = (filters: FilterState) => {
     const hashtags = ['cho-thue']; // Always include base hashtag
     
-    // Add property type hashtag if selected
-    if (filters.propertyType && filters.propertyType !== '') {
+    // Add property type from URL
+    if (propertyType) {
+      hashtags.push(propertyType);
+    }
+    // Or add property type hashtag if selected via filter
+    else if (filters.propertyType && filters.propertyType !== '') {
       hashtags.push(filters.propertyType);
     }
     
@@ -77,28 +81,11 @@ export default function ChoThuePage() {
         isPriority: false, // Can add logic later
         slug: listing.slug,
         broker: listing.brokers,
-        status: listing.status,
-        is_bookmarked: listing.is_bookmarked || false
+        status: listing.status
       }));
       
       setProperties(mappedProperties);
       setPagination({...result.pagination});
-      
-      // Log response for debugging
-      console.log('API Response (cho-thue):', {
-        totalListings: result.data.length,
-        sample: result.data[0],
-        allIsBookmarked: result.data.map((l: any) => ({ id: l.id, is_bookmarked: l.is_bookmarked }))
-      });
-      
-      // Initialize bookmarkedMap from API response
-      const initialBookmarkMap: Record<string, boolean> = {};
-      result.data.forEach((listing: any) => {
-        if (listing.is_bookmarked) {
-          initialBookmarkMap[listing.id] = true;
-        }
-      });
-      setBookmarkedMap(initialBookmarkMap);
     } catch (error) {
       console.error('Error loading listings:', error);
       setProperties([]);
@@ -107,26 +94,23 @@ export default function ChoThuePage() {
     }
   };
 
-  // Load initial listings with "chothue" hashtag
+  // Load initial listings
   useEffect(() => {
-    if (!isHydrated) {
-      console.log('⏳ Waiting for authStore hydration... (cho-thue page)');
-      return;
-    }
-    
-    const initialFilters = {};
+    const initialFilters: FilterState = {
+      propertyType: propertyType || ''
+    };
     setCurrentFilters(initialFilters);
     loadListings(initialFilters);
-  }, [isHydrated]);
+  }, [propertyType]);
 
   const handleFilterChange = (filters: FilterState) => {
     setCurrentFilters(filters);
     
-    // Navigate to property type page if selected
-    if (filters.propertyType && filters.propertyType !== '') {
+    // Update URL if property type changed
+    if (filters.propertyType && filters.propertyType !== propertyType) {
       router.push(`/cho-thue/${filters.propertyType}`);
     } else {
-      loadListings(filters, 1);
+      loadListings(filters, 1); // Reset to page 1 when filtering
     }
   };
 
@@ -162,18 +146,7 @@ export default function ChoThuePage() {
           {properties.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {properties.map((property) => (
-                <PropertyCard 
-                  key={property.id} 
-                  type="cho-thue" 
-                  {...property}
-                  isBookmarked={bookmarkedMap[property.id] || false}
-                  onBookmarkToggle={(isBookmarked) => {
-                    setBookmarkedMap(prev => ({
-                      ...prev,
-                      [property.id]: isBookmarked
-                    }));
-                  }}
-                />
+                <PropertyCard key={property.id} type="cho-thue" {...property} />
               ))}
             </div>
           ) : (

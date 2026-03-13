@@ -5,6 +5,7 @@ import { HeartOff, MapPin, Eye, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/src/store/authStore";
 import { getBookmarkedListings, toggleBookmark } from "@/src/app/modules/bookmarks.service";
+import { transaction_types } from '../../app/generated/prisma/browser';
 
 interface SavedListing {
   id: string;
@@ -19,6 +20,10 @@ interface SavedListing {
   };
   property_types?: {
     name?: string;
+  } | null;
+  transaction_types?: {
+    name?: string;
+    hashtag?: string;
   } | null;
 }
 
@@ -74,11 +79,21 @@ export default function SavedListingsSection() {
           success: result.success,
           itemCount: result.data?.length || 0,
           pagination: result.pagination,
-          firstItem: result.data?.[0]?.title || 'N/A'
+          firstItem: result.data?.[0] ? {
+            id: result.data[0].id,
+            title: result.data[0].title,
+            transaction_types: result.data[0].transaction_types,
+            property_types: result.data[0].property_types
+          } : 'N/A'
         });
 
         if (result.success) {
           setSavedItems(result.data || []);
+          console.log('SavedListingsSection - Items data:', {
+            firstItem: result.data?.[0],
+            transaction_types: result.data?.[0]?.transaction_types,
+            hashtag: result.data?.[0]?.transaction_types?.hashtag
+          });
           setPagination(result.pagination || {
             page: pagination.page,
             limit: pagination.limit,
@@ -189,7 +204,7 @@ export default function SavedListingsSection() {
                         {formatPrice(item.price)}
                       </span>
                       <Link
-                        href={`/mua-ban/${item.slug}`}
+                        href={`/${item.transaction_types?.hashtag || 'mua-ban'}/bai-dang/${item.slug}`}
                         className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors"
                       >
                         Chi tiết <Eye className="size-3.5" />
