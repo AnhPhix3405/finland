@@ -206,3 +206,45 @@ export async function uploadListingAttachments(file: File, listingId: string) {
   await createAttachment(attachmentData)
   return uploadData;
 }
+
+export async function uploadNewsThumbnail(file: File) {
+  // Get signature for news upload
+  const signRes = await fetch("/api/upload/news/sign", {
+    method: "POST"
+  })
+
+  const { timestamp, signature, cloudName, apiKey } = await signRes.json()
+
+  const formData = new FormData()
+
+  formData.append("file", file)
+  formData.append("api_key", apiKey)
+  formData.append("timestamp", timestamp)
+  formData.append("signature", signature)
+  formData.append("folder", "finland/news")
+
+  try {
+    const uploadRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+      {
+        method: "POST",
+        body: formData
+      }
+    )
+    const uploadData = await uploadRes.json()
+    console.log("uploadData", uploadData)
+
+    // Return secure_url to be used directly as thumbnail_url in news model
+    return {
+      secure_url: uploadData.secure_url,
+      url: uploadData.url,
+      public_id: uploadData.public_id,
+      width: uploadData.width,
+      height: uploadData.height,
+      ...uploadData
+    }
+  } catch (err) {
+    console.error('Error uploading news thumbnail:', err)
+    throw err
+  }
+}

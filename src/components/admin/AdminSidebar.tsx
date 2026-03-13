@@ -12,6 +12,7 @@ export default function AdminSidebar() {
     { href: "/admin", label: "Tổng quan", icon: "dashboard", exact: true },
     { href: "/admin/du-an", label: "Quản lý Dự án", icon: "domain", exact: false },
     { href: "/admin/bai-viet", label: "Quản lý Bài viết", icon: "description", exact: false },
+    { href: "/admin/tin-tuc", label: "Quản lý Tin tức", icon: "newspaper", exact: false },
     { href: "/admin/moi-gioi", label: "Quản lý Môi giới", icon: "group", exact: false },
   ];
 

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore } from "@/src/store/authStore";
 import { uploadNewsThumbnail } from "@/src/app/modules/upload.service";
 import TipTap from '@/src/components/ui/TipTap';
@@ -13,37 +13,26 @@ interface Tag {
   slug: string;
 }
 
-export default function AdminAddNewsPage() {
+export default function AdminEditNewsPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug as string;
   const adminToken = useAuthStore((state) => state.accessToken);
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
+  const [thumbnail_url, setThumbnailUrl] = useState('');
   const [thumbnail_file, setThumbnailFile] = useState<File | null>(null);
   const [thumbnail_preview, setThumbnailPreview] = useState('');
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [showTagDropdown, setShowTagDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Load available tags on mount
-  React.useEffect(() => {
-    const loadTags = async () => {
-      try {
-        const res = await fetch('/api/tags');
-        const data = await res.json();
-        if (data.success) {
-          setAvailableTags(data.data || []);
-        }
-      } catch (err) {
-        console.error('Error loading tags:', err);
-      }
-    };
-    loadTags();
-  }, []);
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,11 +55,64 @@ export default function AdminAddNewsPage() {
     setShowTagDropdown(false);
   };
 
+  // Load available tags on mount
+  React.useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const res = await fetch('/api/tags');
+        const data = await res.json();
+        if (data.success) {
+          setAvailableTags(data.data || []);
+        }
+      } catch (err) {
+        console.error('Error loading tags:', err);
+      }
+    };
+    loadTags();
+  }, []);
+
+  // Fetch news article on mount
+  useEffect(() => {
+    if (!adminToken || !slug) return;
+
+    const fetchNews = async () => {
+      try {
+        const res = await fetch(`/api/admin/news/${slug}`, {
+          headers: {
+            'Authorization': `Bearer ${adminToken}`
+          }
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          setTitle(result.data.title);
+          setDescription(result.data.description || '');
+          setContent(result.data.content);
+          setThumbnailUrl(result.data.thumbnail_url || '');
+          if (result.data.tags && Array.isArray(result.data.tags)) {
+            setSelectedTags(result.data.tags.map((tag: Tag) => tag.name));
+          }
+          setError(null);
+        } else {
+          setError(result.error || 'Không thể tải bài viết');
+        }
+      } catch (err) {
+        console.error('Error fetching news:', err);
+        setError('Không thể kết nối đến máy chủ');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, [slug, adminToken]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!adminToken) {
-      setError('Cần đăng nhập admin để tạo tin tức');
+      setError('Cần đăng nhập admin để cập nhật tin tức');
       return;
     }
 
@@ -81,30 +123,28 @@ export default function AdminAddNewsPage() {
 
     setIsSubmitting(true);
     setError(null);
-    
-    try {
-      let thumbnail_url = '';
 
-      // Upload thumbnail if provided
+    try {
+      let finalThumbnailUrl = thumbnail_url;
+
+      // Upload thumbnail if a new file was selected
       if (thumbnail_file) {
         setIsUploading(true);
         try {
           const uploadResult = await uploadNewsThumbnail(thumbnail_file);
-          thumbnail_url = uploadResult.secure_url;
-          console.log('Thumbnail uploaded:', thumbnail_url);
-        } catch (uploadErr) {
-          console.error('Error uploading thumbnail:', uploadErr);
-          setError('Lỗi khi tải lên ảnh. Vui lòng thử lại.');
+          finalThumbnailUrl = uploadResult.secure_url;
+        } catch (err) {
+          console.error('Error uploading thumbnail:', err);
+          setError('Lỗi khi tải lên ảnh đại diện');
           setIsSubmitting(false);
           setIsUploading(false);
           return;
-        } finally {
-          setIsUploading(false);
         }
+        setIsUploading(false);
       }
 
-      const res = await fetch('/api/admin/news', {
-        method: 'POST',
+      const res = await fetch(`/api/admin/news/${slug}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${adminToken}`
@@ -113,7 +153,7 @@ export default function AdminAddNewsPage() {
           title,
           description: description || null,
           content,
-          thumbnail_url: thumbnail_url || null,
+          thumbnail_url: finalThumbnailUrl || null,
           tags: selectedTags
         })
       });
@@ -123,15 +163,63 @@ export default function AdminAddNewsPage() {
       if (result.success) {
         router.push('/admin/tin-tuc');
       } else {
-        setError(result.error || 'Lỗi khi tạo bài viết');
+        setError(result.error || 'Lỗi khi cập nhật bài viết');
       }
     } catch (err) {
-      console.error('Error creating news:', err);
+      console.error('Error updating news:', err);
+      setError('Không thể kết nối đến máy chủ');
+    } finally {
+      setIsSubmitting(false);
+      setIsUploading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!adminToken) {
+      setError('Cần đăng nhập admin để xóa tin tức');
+      return;
+    }
+
+    if (!window.confirm(`Bạn chắc chắn muốn xóa bài "${title}"?\n\nHành động này không thể hoàn tác.`)) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/admin/news/${slug}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${adminToken}`
+        }
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        router.push('/admin/tin-tuc');
+      } else {
+        setError(result.error || 'Lỗi khi xóa bài viết');
+      }
+    } catch (err) {
+      console.error('Error deleting news:', err);
       setError('Không thể kết nối đến máy chủ');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center">
+          <span className="material-symbols-outlined text-4xl animate-spin text-emerald-600 mb-3">progress_activity</span>
+          <p className="text-slate-600 dark:text-slate-400">Đang tải bài viết...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -158,13 +246,22 @@ export default function AdminAddNewsPage() {
           <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-1">
             <Link href="/admin/tin-tuc" className="hover:text-emerald-600 transition-colors">Quản lý Tin tức</Link>
             <span className="material-symbols-outlined text-[16px]" aria-hidden="true">chevron_right</span>
-            <span className="text-slate-900 dark:text-slate-100 font-medium">Viết bài mới</span>
+            <span className="text-slate-900 dark:text-slate-100 font-medium">Chỉnh sửa bài viết</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Soạn thảo Tin Tức</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Cập nhật Tin Tức</h1>
         </div>
         <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isSubmitting || isUploading}
+            className="px-4 py-2 border border-red-300 dark:border-red-700 bg-white dark:bg-slate-800 text-red-700 dark:text-red-400 rounded-sm text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">delete</span>
+            Xóa
+          </button>
           <Link href="/admin/tin-tuc" className="px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-sm text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
-            Hủy
+            Huỷ
           </Link>
           <button 
             type="button"
@@ -175,9 +272,9 @@ export default function AdminAddNewsPage() {
             {isSubmitting || isUploading ? (
               <span className="material-symbols-outlined text-[18px] animate-spin" aria-hidden="true">progress_activity</span>
             ) : (
-              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">publish</span>
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">save</span>
             )}
-            {isSubmitting ? 'Đang lưu...' : isUploading ? 'Đang tải ảnh...' : 'Xuất bản ngay'}
+            {isSubmitting || isUploading ? 'Đang lưu...' : 'Lưu thay đổi'}
           </button>
         </div>
       </div>
@@ -237,32 +334,39 @@ export default function AdminAddNewsPage() {
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3">Hiển thị nội dung</h3>
             
             <div>
-              <label htmlFor="thumbnail" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 Ảnh đại diện (Cover)
               </label>
-              <label htmlFor="thumbnail-input" className="block cursor-pointer">
-                <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-sm p-6 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-emerald-400 dark:hover:border-emerald-600 transition-all group">
-                  <span className="material-symbols-outlined text-4xl text-slate-400 group-hover:text-emerald-500 transition-colors mb-2 block" aria-hidden="true">add_photo_alternate</span>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">Nhấp để tải lên</span> hoặc kéo thả file
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">PNG, JPG, WEBP (Tối đa 5MB)</p>
-                </div>
+              
+              {/* File Upload Area */}
+              <label htmlFor="thumbnail_file" className={`block border-2 border-dashed rounded-sm p-4 text-center cursor-pointer transition-colors ${
+                isUploading || isSubmitting 
+                  ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/30 cursor-not-allowed opacity-50'
+                  : 'border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+              }`}>
                 <input
-                  id="thumbnail-input"
+                  id="thumbnail_file"
                   type="file"
-                  accept="image/png,image/jpeg,image/webp"
+                  accept="image/*"
                   onChange={handleThumbnailChange}
+                  disabled={isUploading || isSubmitting}
                   className="hidden"
-                  disabled={isUploading}
                 />
+                {!thumbnail_preview && !thumbnail_url ? (
+                  <div className="text-sm">
+                    <span className="material-symbols-outlined text-3xl text-slate-400 block mb-1">image</span>
+                    <p className="text-slate-600 dark:text-slate-400 font-medium text-xs">Kéo ảnh vào hoặc click để chọn</p>
+                  </div>
+                ) : null}
               </label>
-              {thumbnail_preview && (
-                <div className="mt-3 rounded-sm overflow-hidden border border-slate-200 dark:border-slate-700 relative">
+
+              {/* Preview */}
+              {(thumbnail_preview || thumbnail_url) && (
+                <div className="mt-3 relative rounded-sm overflow-hidden border border-slate-200 dark:border-slate-700">
                   <img 
-                    src={thumbnail_preview} 
+                    src={thumbnail_preview || thumbnail_url} 
                     alt="Thumbnail preview" 
-                    className="w-full h-40 object-cover"
+                    className="w-full h-32 object-cover"
                   />
                   <button
                     type="button"
@@ -270,10 +374,10 @@ export default function AdminAddNewsPage() {
                       setThumbnailFile(null);
                       setThumbnailPreview('');
                     }}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-sm transition-colors"
+                    className="absolute top-1 right-1 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-sm transition-colors"
                     title="Xóa ảnh"
                   >
-                    <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
+                    <span className="material-symbols-outlined text-[18px]">close</span>
                   </button>
                 </div>
               )}

@@ -21,20 +21,19 @@ export async function GET(request: NextRequest) {
     const tags = await prisma.tags.findMany({
       where: whereCondition,
       select: {
-        name: true
+        id: true,
+        name: true,
+        slug: true
       },
-      distinct: ['name'],
       orderBy: {
         name: 'asc'
       },
       take: 20 // Limit results for performance
     });
 
-    const tagNames = tags.map(tag => tag.name);
-    
     return NextResponse.json({
       success: true,
-      data: tagNames
+      data: tags
     });
 
   } catch (error) {
