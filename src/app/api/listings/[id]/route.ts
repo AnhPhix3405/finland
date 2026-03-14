@@ -293,6 +293,17 @@ export async function PATCH(
       return NextResponse.json({ success: false, error: 'Bạn không có quyền sửa bài đăng này' }, { status: 403 });
     }
 
+    // New restriction: if status is pending or hidden, no actions allowed
+    if (existingListing.status === 'Đang chờ duyệt' || existingListing.status === 'Đã ẩn') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: `Tin đăng đang ở trạng thái "${existingListing.status}", không thể chỉnh sửa.` 
+        },
+        { status: 400 }
+      );
+    }
+
     // Prepare update data
     const updateData: any = { ...otherData };
     if (price !== undefined) {

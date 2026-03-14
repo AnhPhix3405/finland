@@ -68,6 +68,17 @@ export async function PATCH(
       );
     }
 
+    // New restriction: if status is pending or hidden, no actions allowed
+    if (existingListing.status === 'Đang chờ duyệt' || existingListing.status === 'Đã ẩn') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: `Tin đăng đang ở trạng thái "${existingListing.status}", không thể thực hiện thao tác này.` 
+        },
+        { status: 400 }
+      );
+    }
+
     // Update the listing status
     const updatedListing = await prisma.listings.update({
       where: { id },

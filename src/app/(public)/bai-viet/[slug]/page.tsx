@@ -103,6 +103,14 @@ export default function EditListingPage() {
         
         if (result.success && result.data) {
           const l = result.data;
+          
+          // Restriction: No editing for pending or hidden listings
+          if (l.status === 'Đang chờ duyệt' || l.status === 'Đã ẩn') {
+            alert(`Tin đăng đang ở trạng thái "${l.status}", không thể chỉnh sửa.`);
+            router.push("/tai-khoan");
+            return;
+          }
+
           setListingId(l.id);
           setTitle(l.title || "");
           setListingSlug(l.slug || "");

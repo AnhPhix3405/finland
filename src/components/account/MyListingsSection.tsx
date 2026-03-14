@@ -7,7 +7,15 @@ import { getMyListings, updateListingStatus, deleteListingLocal } from "@/src/ap
 import { useEffect } from "react";
 import Link from "next/link";
 
-type ListingStatus = "public" | "hidden" | "expired" | "sold" | "rejected" | "pending";
+type ListingStatus = 
+  | "Đang hiển thị" 
+  | "Đang chờ duyệt" 
+  | "Đã ẩn" 
+  | "Hết hạn" 
+  | "Đã bán" 
+  | "Đã xong" 
+  | "Bị từ chối"
+  | "public" | "hidden" | "expired" | "sold" | "rejected" | "pending"; // Keep old ones just in case
 
 interface PropertyListing {
   id: string;
@@ -242,31 +250,49 @@ export default function MyListingsSection() {
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <Link 
-                        href={`/bai-viet/${property.slug || property.id}`}
-                        className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-md transition-all" 
-                        title="Sửa"
-                      >
-                        <Edit2 className="size-3.5" />
-                      </Link>
-                      <button 
-                         onClick={() => handleUpdateStatus(property.id, "Đã ẩn")}
-                         className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-all" 
-                         title="Ẩn tin">
-                        <EyeOff className="size-3.5" />
-                      </button>
-                      <button 
-                         onClick={() => handleUpdateStatus(property.id, "Đã bán")}
-                         className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-all" 
-                         title="Đã bán">
-                        <CheckCircle2 className="size-3.5" />
-                      </button>
-                      <button 
-                         onClick={() => handleDelete(property.id)}
-                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all" 
-                         title="Xóa">
-                        <Trash2 className="size-3.5" />
-                      </button>
+                      {property.status === "Đang chờ duyệt" || property.status === "Đã ẩn" ? (
+                        <>
+                          <div className="flex items-center gap-1 opacity-20 cursor-not-allowed">
+                            <div className="p-1.5 text-slate-400"><Edit2 className="size-3.5" /></div>
+                            <div className="p-1.5 text-slate-400"><EyeOff className="size-3.5" /></div>
+                            <div className="p-1.5 text-slate-400"><CheckCircle2 className="size-3.5" /></div>
+                          </div>
+                          <button 
+                             onClick={() => handleDelete(property.id)}
+                             className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all" 
+                             title="Xóa">
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <Link 
+                            href={`/bai-viet/${property.slug || property.id}`}
+                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-md transition-all" 
+                            title="Sửa"
+                          >
+                            <Edit2 className="size-3.5" />
+                          </Link>
+                          <button 
+                             onClick={() => handleUpdateStatus(property.id, "Đã ẩn")}
+                             className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-all" 
+                             title="Ẩn tin">
+                            <EyeOff className="size-3.5" />
+                          </button>
+                          <button 
+                             onClick={() => handleUpdateStatus(property.id, "Đã bán")}
+                             className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-all" 
+                             title="Đã bán">
+                            <CheckCircle2 className="size-3.5" />
+                          </button>
+                          <button 
+                             onClick={() => handleDelete(property.id)}
+                             className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all" 
+                             title="Xóa">
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
